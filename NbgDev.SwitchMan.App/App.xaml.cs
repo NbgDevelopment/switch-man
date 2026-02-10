@@ -1,16 +1,7 @@
-using NbgDev.SwitchMan.App.Pages;
+using System.Windows;
 
 namespace NbgDev.SwitchMan.App;
 
 public partial class App : Application
 {
-    public App()
-    {
-        InitializeComponent();
-    }
-
-    protected override Window CreateWindow(IActivationState? activationState)
-    {
-        return new Window(new NavigationPage(new MainPage()));
-    }
 }

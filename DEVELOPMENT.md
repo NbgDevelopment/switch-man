@@ -8,23 +8,15 @@ This guide provides information for developers working on the Switch Man project
 
 1. **Visual Studio 2022 (17.8 or later)** with:
    - .NET desktop development workload
-   - .NET Multi-platform App UI development workload
-   - Android SDK (for Android development)
    
    OR
    
    **Visual Studio Code** with:
    - C# Dev Kit extension
-   - .NET MAUI extension
 
 2. **.NET 10 SDK**
    - Download from [dotnet.microsoft.com](https://dotnet.microsoft.com/)
    - Verify installation: `dotnet --version`
-
-3. **MAUI Workload**
-   ```bash
-   dotnet workload install maui
-   ```
 
 ### First-Time Setup
 
@@ -46,34 +38,19 @@ This guide provides information for developers working on the Switch Man project
 
 ## Project Architecture
 
-### MVVM-Light Pattern
+### MVVM Pattern (Simplified)
 
-The app uses a simplified MVVM approach:
+The app uses a simplified approach:
 - **Models**: Data structures (e.g., `Vlan`)
 - **Services**: Business logic and data management
-- **Pages**: Views with code-behind for simple interactions
+- **Windows**: WPF windows with code-behind for interactions
 
-### Dependency Injection
+### Dependency Management
 
-Services are registered in `MauiProgram.cs`:
+Services are instantiated directly in windows for simplicity:
 
 ```csharp
-builder.Services.AddSingleton<VlanService>();      // Shared instance
-builder.Services.AddTransient<MainPage>();          // New instance per request
-builder.Services.AddTransient<SettingsPage>();
-```
-
-Access services in pages:
-```csharp
-var service = Handler?.MauiContext?.Services.GetService<VlanService>();
-```
-
-### Navigation
-
-Using `NavigationPage`:
-```csharp
-await Navigation.PushAsync(new SettingsPage());  // Navigate forward
-await Navigation.PopAsync();                      // Navigate back
+private readonly VlanService _vlanService = new VlanService();
 ```
 
 ## Code Organization
@@ -87,123 +64,61 @@ await Navigation.PopAsync();                      // Navigate back
 ### Adding a New Service
 
 1. Create class in `Services/` folder
-2. Register in `MauiProgram.cs`
-3. Choose appropriate lifetime:
-   - `Singleton`: One instance for app lifetime
-   - `Transient`: New instance each time
-   - `Scoped`: One instance per scope (rarely used in MAUI)
+2. Implement business logic methods
+3. Use `ObservableCollection<T>` for data that binds to UI
 
-### Adding a New Page
+### Adding a New Window
 
-1. Create XAML and code-behind files in `Pages/` folder
-2. Register in `MauiProgram.cs` as transient
-3. Add navigation from existing pages
+1. Create XAML and code-behind files in `Windows/` folder
+2. Register window as needed in application
+3. Use `ShowDialog()` for modal windows, `Show()` for modeless
 
 Example XAML structure:
 ```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="NbgDev.SwitchMan.Pages.MyPage"
-             Title="My Page">
-    <!-- Content here -->
-</ContentPage>
+<Window x:Class="NbgDev.SwitchMan.App.Windows.MyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="My Window" Height="450" Width="800">
+    <Grid>
+        <!-- Content here -->
+    </Grid>
+</Window>
 ```
 
-## Styling
+## Building and Running
 
-### Global Styles
+### Debug Build
 
-- **Colors**: `Resources/Styles/Colors.xaml`
-- **Control Styles**: `Resources/Styles/Styles.xaml`
-
-### Page-Specific Styles
-
-Add to page's XAML:
-```xml
-<ContentPage.Resources>
-    <ResourceDictionary>
-        <Style x:Key="MyStyle" TargetType="Label">
-            <Setter Property="TextColor" Value="Blue" />
-        </Style>
-    </ResourceDictionary>
-</ContentPage.Resources>
-```
-
-## Platform-Specific Code
-
-### Conditional Compilation
-
-```csharp
-#if ANDROID
-    // Android-specific code
-#elif WINDOWS
-    // Windows-specific code
-#endif
-```
-
-### Platform Files
-
-- **Android**: `Platforms/Android/`
-  - `MainActivity.cs`: Main activity
-  - `AndroidManifest.xml`: App permissions and settings
-  
-- **Windows**: `Platforms/Windows/`
-  - `App.xaml`: WinUI app definition
-  - `Package.appxmanifest`: Windows app manifest
-
-## Testing
-
-### Manual Testing
-
-1. **Windows**: Run from Visual Studio or:
-   ```bash
-   dotnet run -f net10.0-windows10.0.19041.0
-   ```
-
-2. **Android**: Ensure emulator/device is running, then:
-   ```bash
-   dotnet build -f net10.0-android -t:Run
-   ```
-
-### Testing Checklist
-
-- [ ] Main page loads correctly
-- [ ] Settings button navigates to settings page
-- [ ] Can add VLAN with valid name and ID
-- [ ] Validation prevents invalid VLAN IDs
-- [ ] VLANs appear in the list
-- [ ] Swipe-to-delete works correctly
-- [ ] Navigation back button works
-- [ ] App survives rotation (Android)
-- [ ] App works in light/dark mode
-
-## Debugging
-
-### Visual Studio
-
-- Set breakpoints in code
-- Use Debug β†' Start Debugging (F5)
-- View output in Output window
-
-### Common Issues
-
-**MAUI workload not found**
 ```bash
-dotnet workload install maui
-```
-
-**Build errors after pulling changes**
-```bash
-dotnet clean
-dotnet restore
 dotnet build
 ```
 
-**Android deployment fails**
-- Ensure Android emulator is running
-- Check Android SDK is installed
-- Verify `adb devices` shows connected device
+### Release Build
+
+```bash
+dotnet build -c Release
+```
+
+### Running the Application
+
+```bash
+dotnet run --project NbgDev.SwitchMan.App
+```
+
+Or in Visual Studio: Press F5
+
+## Testing
+
+### Manual Testing Checklist
+
+- [ ] Main window loads correctly
+- [ ] Settings button opens settings window
+- [ ] Can add VLAN with valid name and ID
+- [ ] Validation prevents invalid VLAN IDs
+- [ ] VLANs appear in the list
+- [ ] Delete selected works correctly
+- [ ] Duplicate VLAN IDs are rejected
+- [ ] App handles empty input gracefully
 
 ## Best Practices
 
@@ -211,49 +126,21 @@ dotnet build
    - Use `x:Name` for controls accessed in code-behind
    - Use PascalCase for names
 
-2. **Async Operations**:
-   - Use `async`/`await` for UI operations
-   - Don't block UI thread
+2. **Event Handlers**:
+   - Use descriptive names: `OnSomethingClicked`
+   - Keep handlers focused and simple
 
-3. **Resource Management**:
+3. **Data Binding**:
+   - Bind to ObservableCollections for automatic UI updates
+   - Use StringFormat in bindings when needed
+
+4. **Resource Management**:
    - Dispose of resources when done
    - Unsubscribe from events
 
-4. **Accessibility**:
-   - Use `SemanticProperties` for screen readers
-   - Set minimum touch targets (44x44)
-
-5. **Performance**:
-   - Use `CollectionView` instead of `ListView`
-   - Implement virtualization for large lists
-   - Avoid complex layouts in list items
-
-## Build Configuration
-
-### Debug vs Release
-
-- **Debug**: Includes debug symbols, no optimization
-- **Release**: Optimized, smaller size, ready for distribution
-
-```bash
-# Debug build (default)
-dotnet build
-
-# Release build
-dotnet build -c Release
-```
-
-### Publishing
-
-**Windows**:
-```bash
-dotnet publish -f net10.0-windows10.0.19041.0 -c Release
-```
-
-**Android**:
-```bash
-dotnet publish -f net10.0-android -c Release
-```
+5. **Accessibility**:
+   - Use Labels for form fields
+   - Set meaningful window titles
 
 ## Version Control
 
@@ -271,7 +158,7 @@ Follow conventional commits:
 Example:
 ```
 feat: add VLAN validation
-fix: resolve navigation crash on Android
+fix: resolve duplicate ID issue
 docs: update development guide
 ```
 
@@ -284,7 +171,7 @@ docs: update development guide
 
 ## Resources
 
-- [.NET MAUI Documentation](https://docs.microsoft.com/dotnet/maui/)
+- [WPF Documentation](https://docs.microsoft.com/dotnet/desktop/wpf/)
 - [XAML Documentation](https://docs.microsoft.com/dotnet/desktop/wpf/xaml/)
 - [C# Guide](https://docs.microsoft.com/dotnet/csharp/)
 - [GitHub Copilot Instructions](.github/copilot-instructions.md)
@@ -292,6 +179,6 @@ docs: update development guide
 ## Getting Help
 
 - Check existing issues on GitHub
-- Consult the .NET MAUI documentation
+- Consult the WPF documentation
 - Ask in team chat or discussions
 - Create a new issue for bugs or feature requests

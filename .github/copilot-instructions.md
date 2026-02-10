@@ -1,12 +1,12 @@
 # Switch Man - GitHub Copilot Instructions
 
 ## Project Overview
-Switch Man is a .NET MAUI application designed to manage VLAN configurations for network switches. The app allows users to configure individual ports of a managed network switch to specific VLAN IDs.
+Switch Man is a .NET WPF application designed to manage VLAN configurations for network switches. The app allows users to configure individual ports of a managed network switch to specific VLAN IDs.
 
 ## Technology Stack
 - **.NET 10**: Latest .NET framework
-- **.NET MAUI**: Cross-platform UI framework
-- **Target Platforms**: Windows and Android only
+- **WPF**: Windows Presentation Foundation
+- **Target Platform**: Windows only
 - **Language**: C# with implicit usings and nullable reference types enabled
 
 ## Project Structure
@@ -16,21 +16,10 @@ NbgDev.SwitchMan.App/
 β"‚   └── Vlan.cs                  # VLAN data model
 β"œβ"€β"€ Services/
 β"‚   └── VlanService.cs           # In-memory VLAN management service
-β"œβ"€β"€ Pages/
-β"‚   β"œβ"€β"€ MainPage.xaml/cs         # Main application page
-β"‚   └── SettingsPage.xaml/cs    # VLAN management settings page
-β"œβ"€β"€ Resources/
-β"‚   β"œβ"€β"€ Styles/
-β"‚   β"‚   β"œβ"€β"€ Colors.xaml          # Application color definitions
-β"‚   β"‚   └── Styles.xaml          # Application-wide styles
-β"‚   β"œβ"€β"€ Fonts/                   # Application fonts
-β"‚   β"œβ"€β"€ AppIcon/                 # App icon assets
-β"‚   └── Splash/                  # Splash screen assets
-β"œβ"€β"€ Platforms/
-β"‚   β"œβ"€β"€ Android/                 # Android-specific code
-β"‚   └── Windows/                 # Windows-specific code
+β"œβ"€β"€ Windows/
+β"‚   β"œβ"€β"€ MainWindow.xaml/cs       # Main application window
+β"‚   └── SettingsWindow.xaml/cs  # VLAN management settings window
 β"œβ"€β"€ App.xaml/cs                   # Application entry point
-β"œβ"€β"€ MauiProgram.cs               # MAUI configuration and DI setup
 └── NbgDev.SwitchMan.App.csproj  # Project file
 ```
 
@@ -40,22 +29,17 @@ NbgDev.SwitchMan.App/
 - **Vlan**: Simple POCO class with `Name` (string) and `VlanId` (int) properties
 
 ### Services
-- **VlanService**: Singleton service managing an in-memory ObservableCollection of VLANs
+- **VlanService**: Service managing an in-memory ObservableCollection of VLANs
   - Methods: `GetVlans()`, `AddVlan()`, `RemoveVlan()`, `UpdateVlan()`
   - No persistence - data is lost when app closes
 
-### Pages
-- **MainPage**: Landing page with app title and "Open Settings" button
-- **SettingsPage**: VLAN management interface with:
+### Windows
+- **MainWindow**: Landing window with app title and "Open Settings" button
+- **SettingsWindow**: VLAN management interface with:
   - Form to add new VLANs (name + VLAN ID)
-  - List display of configured VLANs using CollectionView
-  - Swipe-to-delete functionality for removing VLANs
+  - ListBox display of configured VLANs
+  - Delete selected functionality for removing VLANs
   - Input validation (VLAN ID must be 1-4094)
-
-## Dependency Injection
-Services and pages are registered in `MauiProgram.cs`:
-- VlanService: Registered as singleton
-- MainPage and SettingsPage: Registered as transient
 
 ## Coding Standards
 1. **Use implicit usings** - enabled in project file
@@ -63,10 +47,10 @@ Services and pages are registered in `MauiProgram.cs`:
 3. **XAML Conventions**:
    - Use `x:Name` for controls that need code-behind access
    - Leverage data binding where appropriate
-   - Use semantic properties for accessibility
+   - Use semantic element names
 4. **C# Conventions**:
    - Follow standard .NET naming conventions
-   - Use async/await for UI operations
+   - Use MessageBox for user notifications
    - Validate user input before processing
 
 ## VLAN ID Validation Rules
@@ -75,52 +59,44 @@ Services and pages are registered in `MauiProgram.cs`:
 - Display appropriate error messages for invalid input
 
 ## Navigation
-- Uses NavigationPage for page navigation
-- MainPage opens SettingsPage via `Navigation.PushAsync()`
+- Uses modal dialogs for windows
+- MainWindow opens SettingsWindow via `ShowDialog()`
 
 ## Common Development Tasks
 
-### Adding a New Page
-1. Create XAML and code-behind files in `/Pages` directory
-2. Register page in `MauiProgram.cs` as transient service
-3. Add navigation logic from existing pages
+### Adding a New Window
+
+1. Create XAML and code-behind files in `/Windows` directory
+2. Add window opening logic from existing windows
+3. Use `ShowDialog()` for modal, `Show()` for modeless
 
 ### Adding a New Service
+
 1. Create service class in `/Services` directory
-2. Register in `MauiProgram.cs` with appropriate lifetime (singleton/transient/scoped)
-3. Inject via constructor or access via `Handler?.MauiContext?.Services`
+2. Instantiate in windows as needed
+3. Use `ObservableCollection<T>` for bindable data
 
 ### Modifying UI Styles
-- Global colors: Edit `Resources/Styles/Colors.xaml`
-- Control styles: Edit `Resources/Styles/Styles.xaml`
-- Page-specific styles: Add to page's XAML ResourceDictionary
 
-### Platform-Specific Code
-- Android: Modify files in `Platforms/Android/`
-- Windows: Modify files in `Platforms/Windows/`
-- Use conditional compilation: `#if ANDROID`, `#if WINDOWS`
+- Define styles in Window.Resources or App.xaml
+- Use standard WPF styling approaches
 
 ## Building and Running
+
 ```bash
 # Restore dependencies
 dotnet restore
 
-# Build for Android
-dotnet build -f net10.0-android
+# Build
+dotnet build
 
-# Build for Windows
-dotnet build -f net10.0-windows10.0.19041.0
-
-# Run on Android emulator
-dotnet build -f net10.0-android -t:Run
-
-# Run on Windows
-dotnet build -f net10.0-windows10.0.19041.0 -t:Run
+# Run
+dotnet run --project NbgDev.SwitchMan.App
 ```
 
 ## Known Limitations
 - VLAN data is stored in memory only (no persistence)
-- Only supports Windows and Android platforms
+- Only supports Windows platform
 - No network switch integration (UI only)
 - No authentication or user management
 
@@ -133,6 +109,6 @@ dotnet build -f net10.0-windows10.0.19041.0 -t:Run
 - Multi-switch management
 
 ## Troubleshooting
-- **Build errors**: Ensure .NET 10 SDK is installed and MAUI workload is available
-- **Service not found**: Check service registration in `MauiProgram.cs`
-- **Navigation issues**: Verify page is wrapped in NavigationPage in `App.xaml.cs`
+- **Build errors**: Ensure .NET 10 SDK is installed
+- **Service not found**: Check service instantiation in window constructors
+- **Window issues**: Verify XAML markup is valid
