@@ -6,17 +6,16 @@ This guide provides information for developers working on the Switch Man project
 
 ### Prerequisites
 
-1. **Visual Studio 2022 (17.8 or later)** with:
-   - .NET desktop development workload
-   
-   OR
-   
-   **Visual Studio Code** with:
+1. **Visual Studio 2022 (17.8 or later)** or **Visual Studio Code** with:
    - C# Dev Kit extension
+   - C# extension
 
 2. **.NET 10 SDK**
    - Download from [dotnet.microsoft.com](https://dotnet.microsoft.com/)
    - Verify installation: `dotnet --version`
+
+3. **Docker** (for containerized deployment)
+   - Download from [docker.com](https://www.docker.com/)
 
 ### First-Time Setup
 
@@ -36,21 +35,31 @@ This guide provides information for developers working on the Switch Man project
    dotnet build
    ```
 
+4. Run the application:
+   ```bash
+   dotnet run --project NbgDev.SwitchMan.App
+   ```
+
 ## Project Architecture
 
-### MVVM Pattern (Simplified)
+### Blazor Server
 
-The app uses a simplified approach:
+The app uses Blazor Server with:
 - **Models**: Data structures (e.g., `Vlan`)
 - **Services**: Business logic and data management
-- **Windows**: WPF windows with code-behind for interactions
+- **Components**: Blazor components and pages
 
-### Dependency Management
+### Dependency Injection
 
-Services are instantiated directly in windows for simplicity:
+Services are registered in `Program.cs`:
 
 ```csharp
-private readonly VlanService _vlanService = new VlanService();
+builder.Services.AddSingleton<VlanService>();
+```
+
+Access services in components:
+```csharp
+@inject VlanService VlanService
 ```
 
 ## Code Organization
@@ -59,88 +68,101 @@ private readonly VlanService _vlanService = new VlanService();
 
 1. Create class in `Models/` folder
 2. Define properties with getters/setters
-3. Consider implementing `INotifyPropertyChanged` for data binding
 
 ### Adding a New Service
 
 1. Create class in `Services/` folder
-2. Implement business logic methods
-3. Use `ObservableCollection<T>` for data that binds to UI
+2. Register in `Program.cs`
+3. Choose appropriate lifetime:
+   - `Singleton`: One instance for app lifetime
+   - `Scoped`: One instance per request
+   - `Transient`: New instance each time
 
-### Adding a New Window
+### Adding a New Page
 
-1. Create XAML and code-behind files in `Windows/` folder
-2. Register window as needed in application
-3. Use `ShowDialog()` for modal windows, `Show()` for modeless
+1. Create `.razor` file in `Components/Pages/` folder
+2. Add `@page "/route"` directive at the top
+3. Use `@inject` to access services
+4. Add `@rendermode InteractiveServer` for interactive components
 
-Example XAML structure:
-```xml
-<Window x:Class="NbgDev.SwitchMan.App.Windows.MyWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="My Window" Height="450" Width="800">
-    <Grid>
-        <!-- Content here -->
-    </Grid>
-</Window>
+Example:
+```razor
+@page "/mypage"
+@inject MyService MyService
+@rendermode InteractiveServer
+
+<h1>My Page</h1>
+
+@code {
+    // Component logic
+}
 ```
 
 ## Building and Running
 
-### Debug Build
+### Development
 
 ```bash
-dotnet build
-```
-
-### Release Build
-
-```bash
-dotnet build -c Release
-```
-
-### Running the Application
-
-```bash
+# Run in development mode
 dotnet run --project NbgDev.SwitchMan.App
+
+# Watch for changes (hot reload)
+dotnet watch --project NbgDev.SwitchMan.App
 ```
 
-Or in Visual Studio: Press F5
+### Docker
+
+```bash
+# Build Docker image
+docker build -t switchman:latest .
+
+# Run container
+docker run -d -p 8080:8080 --name switchman switchman:latest
+
+# View logs
+docker logs switchman
+
+# Stop container
+docker stop switchman
+
+# Remove container
+docker rm switchman
+```
 
 ## Testing
 
 ### Manual Testing Checklist
 
-- [ ] Main window loads correctly
-- [ ] Settings button opens settings window
+- [ ] Home page loads correctly
+- [ ] Navigation menu works
+- [ ] Settings page loads
 - [ ] Can add VLAN with valid name and ID
 - [ ] Validation prevents invalid VLAN IDs
 - [ ] VLANs appear in the list
-- [ ] Delete selected works correctly
+- [ ] Delete button works correctly
 - [ ] Duplicate VLAN IDs are rejected
 - [ ] App handles empty input gracefully
+- [ ] Real-time updates work when multiple browsers connected
 
 ## Best Practices
 
-1. **XAML Naming**:
-   - Use `x:Name` for controls accessed in code-behind
-   - Use PascalCase for names
+1. **Razor Naming**:
+   - Use PascalCase for component names
+   - Use lowercase for parameters
 
-2. **Event Handlers**:
-   - Use descriptive names: `OnSomethingClicked`
-   - Keep handlers focused and simple
+2. **State Management**:
+   - Use services for shared state
+   - Call `StateHasChanged()` when updating UI from async operations
 
-3. **Data Binding**:
-   - Bind to ObservableCollections for automatic UI updates
-   - Use StringFormat in bindings when needed
+3. **Performance**:
+   - Use `@key` directive for list items
+   - Avoid unnecessary re-renders
+   - Use `ShouldRender()` to optimize rendering
 
-4. **Resource Management**:
-   - Dispose of resources when done
-   - Unsubscribe from events
-
-5. **Accessibility**:
-   - Use Labels for form fields
-   - Set meaningful window titles
+4. **Accessibility**:
+   - Use semantic HTML elements
+   - Add ARIA labels where needed
+   - Ensure keyboard navigation works
 
 ## Version Control
 
@@ -155,13 +177,6 @@ Follow conventional commits:
 - `test:` Adding tests
 - `chore:` Build/tool changes
 
-Example:
-```
-feat: add VLAN validation
-fix: resolve duplicate ID issue
-docs: update development guide
-```
-
 ### Branch Strategy
 
 - `main`: Stable releases
@@ -171,14 +186,14 @@ docs: update development guide
 
 ## Resources
 
-- [WPF Documentation](https://docs.microsoft.com/dotnet/desktop/wpf/)
-- [XAML Documentation](https://docs.microsoft.com/dotnet/desktop/wpf/xaml/)
+- [Blazor Documentation](https://docs.microsoft.com/aspnet/core/blazor/)
+- [ASP.NET Core Documentation](https://docs.microsoft.com/aspnet/core/)
 - [C# Guide](https://docs.microsoft.com/dotnet/csharp/)
-- [GitHub Copilot Instructions](.github/copilot-instructions.md)
+- [Docker Documentation](https://docs.docker.com/)
 
 ## Getting Help
 
 - Check existing issues on GitHub
-- Consult the WPF documentation
+- Consult the Blazor documentation
 - Ask in team chat or discussions
 - Create a new issue for bugs or feature requests

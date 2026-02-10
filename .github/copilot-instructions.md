@@ -1,26 +1,29 @@
 # Switch Man - GitHub Copilot Instructions
 
 ## Project Overview
-Switch Man is a .NET WPF application designed to manage VLAN configurations for network switches. The app allows users to configure individual ports of a managed network switch to specific VLAN IDs.
+Switch Man is a .NET Blazor Server application designed to manage VLAN configurations for network switches. The app allows users to configure individual ports of a managed network switch to specific VLAN IDs.
 
 ## Technology Stack
 - **.NET 10**: Latest .NET framework
-- **WPF**: Windows Presentation Foundation
-- **Target Platform**: Windows only
+- **Blazor Server**: Server-side Blazor for interactive web UI
+- **Target Platform**: Cross-platform (runs in Docker)
 - **Language**: C# with implicit usings and nullable reference types enabled
 
 ## Project Structure
 ```
 NbgDev.SwitchMan.App/
+β"œβ"€β"€ Components/
+β"‚   β"œβ"€β"€ Layout/
+β"‚   β"‚   β"œβ"€β"€ MainLayout.razor     # Main layout
+β"‚   β"‚   └── NavMenu.razor        # Navigation menu
+β"‚   └── Pages/
+β"‚       β"œβ"€β"€ Home.razor            # Landing page
+β"‚       └── Settings.razor        # VLAN management page
 β"œβ"€β"€ Models/
-β"‚   └── Vlan.cs                  # VLAN data model
+β"‚   └── Vlan.cs                   # VLAN data model
 β"œβ"€β"€ Services/
-β"‚   └── VlanService.cs           # In-memory VLAN management service
-β"œβ"€β"€ Windows/
-β"‚   β"œβ"€β"€ MainWindow.xaml/cs       # Main application window
-β"‚   └── SettingsWindow.xaml/cs  # VLAN management settings window
-β"œβ"€β"€ App.xaml/cs                   # Application entry point
-└── NbgDev.SwitchMan.App.csproj  # Project file
+β"‚   └── VlanService.cs            # In-memory VLAN management service
+└── Program.cs                     # Application entry point
 ```
 
 ## Architecture
@@ -29,28 +32,30 @@ NbgDev.SwitchMan.App/
 - **Vlan**: Simple POCO class with `Name` (string) and `VlanId` (int) properties
 
 ### Services
-- **VlanService**: Service managing an in-memory ObservableCollection of VLANs
+- **VlanService**: Singleton service managing an in-memory ObservableCollection of VLANs
   - Methods: `GetVlans()`, `AddVlan()`, `RemoveVlan()`, `UpdateVlan()`
-  - No persistence - data is lost when app closes
+  - Registered as singleton in dependency injection
+  - No persistence - data is lost when app restarts
 
-### Windows
-- **MainWindow**: Landing window with app title and "Open Settings" button
-- **SettingsWindow**: VLAN management interface with:
+### Pages
+- **Home**: Landing page with app title and link to settings
+- **Settings**: VLAN management interface with:
   - Form to add new VLANs (name + VLAN ID)
-  - ListBox display of configured VLANs
-  - Delete selected functionality for removing VLANs
+  - List display of configured VLANs
+  - Delete button for removing VLANs
   - Input validation (VLAN ID must be 1-4094)
+  - Real-time updates using Blazor Server
 
 ## Coding Standards
 1. **Use implicit usings** - enabled in project file
 2. **Nullable reference types** - enabled in project file
-3. **XAML Conventions**:
-   - Use `x:Name` for controls that need code-behind access
-   - Leverage data binding where appropriate
-   - Use semantic element names
+3. **Razor Conventions**:
+   - Use `@page` directive for routable components
+   - Use `@inject` for dependency injection
+   - Use `@rendermode InteractiveServer` for interactive components
 4. **C# Conventions**:
    - Follow standard .NET naming conventions
-   - Use MessageBox for user notifications
+   - Use async/await for async operations
    - Validate user input before processing
 
 ## VLAN ID Validation Rules
@@ -59,27 +64,26 @@ NbgDev.SwitchMan.App/
 - Display appropriate error messages for invalid input
 
 ## Navigation
-- Uses modal dialogs for windows
-- MainWindow opens SettingsWindow via `ShowDialog()`
+- Uses Blazor routing with `NavLink` components
+- Home page accessible at `/`
+- Settings page accessible at `/settings`
 
 ## Common Development Tasks
 
-### Adding a New Window
-
-1. Create XAML and code-behind files in `/Windows` directory
-2. Add window opening logic from existing windows
-3. Use `ShowDialog()` for modal, `Show()` for modeless
+### Adding a New Page
+1. Create `.razor` file in `Components/Pages/` directory
+2. Add `@page "/route"` directive
+3. Add navigation link in `NavMenu.razor`
 
 ### Adding a New Service
+1. Create service class in `Services/` directory
+2. Register in `Program.cs` with appropriate lifetime
+3. Inject into components with `@inject`
 
-1. Create service class in `/Services` directory
-2. Instantiate in windows as needed
-3. Use `ObservableCollection<T>` for bindable data
-
-### Modifying UI Styles
-
-- Define styles in Window.Resources or App.xaml
-- Use standard WPF styling approaches
+### Modifying UI
+- Bootstrap 5 is available for styling
+- Update components in `Components/` directory
+- Use Blazor data binding with `@bind`
 
 ## Building and Running
 
@@ -90,25 +94,39 @@ dotnet restore
 # Build
 dotnet build
 
-# Run
+# Run locally
 dotnet run --project NbgDev.SwitchMan.App
+
+# Run with Docker
+docker build -t switchman:latest .
+docker run -d -p 8080:8080 switchman:latest
 ```
+
+## Docker Deployment
+
+The application is designed to run in Docker:
+- Dockerfile is at repository root
+- Exposes port 8080
+- Uses multi-stage build for smaller images
+- Based on official Microsoft .NET images
 
 ## Known Limitations
 - VLAN data is stored in memory only (no persistence)
-- Only supports Windows platform
+- Runs on any platform via Docker
 - No network switch integration (UI only)
 - No authentication or user management
 
 ## Future Enhancement Ideas
-- Add persistence (SQLite, preferences, or file storage)
+- Add persistent storage (SQLite, SQL Server, or MongoDB)
 - Implement actual network switch communication (SNMP, SSH)
 - Add port-to-VLAN mapping functionality
 - Support for switch discovery and selection
 - Import/export VLAN configurations
 - Multi-switch management
+- User authentication and authorization
 
 ## Troubleshooting
 - **Build errors**: Ensure .NET 10 SDK is installed
-- **Service not found**: Check service instantiation in window constructors
-- **Window issues**: Verify XAML markup is valid
+- **Service not found**: Check service registration in `Program.cs`
+- **Page not routing**: Verify `@page` directive is present
+- **Docker issues**: Ensure Docker is running and port 8080 is available
