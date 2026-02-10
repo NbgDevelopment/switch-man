@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
-using NbgDev.SwitchMan.Pages;
-using NbgDev.SwitchMan.Services;
+using NbgDev.SwitchMan.App.Pages;
+using NbgDev.SwitchMan.App.Services;
 
-namespace NbgDev.SwitchMan;
+namespace NbgDev.SwitchMan.App;
 
 public static class MauiProgram
 {

@@ -1,4 +1,4 @@
-namespace NbgDev.SwitchMan.Pages;
+namespace NbgDev.SwitchMan.App.Pages;
 
 public partial class MainPage : ContentPage
 {

@@ -63,7 +63,7 @@ dotnet build -f net10.0-android -t:Run
 ## Project Structure
 
 ```
-NbgDev.SwitchMan/
+NbgDev.SwitchMan.App/
 β"œβ"€β"€ Models/           # Data models (Vlan)
 β"œβ"€β"€ Services/         # Business logic (VlanService)
 β"œβ"€β"€ Pages/            # UI pages (MainPage, SettingsPage)

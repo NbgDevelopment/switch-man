@@ -11,7 +11,7 @@ Switch Man is a .NET MAUI application designed to manage VLAN configurations for
 
 ## Project Structure
 ```
-NbgDev.SwitchMan/
+NbgDev.SwitchMan.App/
 β"œβ"€β"€ Models/
 β"‚   └── Vlan.cs                  # VLAN data model
 β"œβ"€β"€ Services/
@@ -31,7 +31,7 @@ NbgDev.SwitchMan/
 β"‚   └── Windows/                 # Windows-specific code
 β"œβ"€β"€ App.xaml/cs                   # Application entry point
 β"œβ"€β"€ MauiProgram.cs               # MAUI configuration and DI setup
-└── NbgDev.SwitchMan.csproj      # Project file
+└── NbgDev.SwitchMan.App.csproj  # Project file
 ```
 
 ## Architecture

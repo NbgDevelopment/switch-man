@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
-using NbgDev.SwitchMan.Models;
-using NbgDev.SwitchMan.Services;
+using NbgDev.SwitchMan.App.Models;
+using NbgDev.SwitchMan.App.Services;
 
-namespace NbgDev.SwitchMan.Pages;
+namespace NbgDev.SwitchMan.App.Pages;
 
 public partial class SettingsPage : ContentPage
 {

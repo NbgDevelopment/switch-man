@@ -1,6 +1,6 @@
-using NbgDev.SwitchMan.Pages;
+using NbgDev.SwitchMan.App.Pages;
 
-namespace NbgDev.SwitchMan;
+namespace NbgDev.SwitchMan.App;
 
 public partial class App : Application
 {

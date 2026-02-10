@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml;
 
-namespace NbgDev.SwitchMan.WinUI;
+namespace NbgDev.SwitchMan.App.WinUI;
 
 public partial class App : MauiWinUIApplication
 {

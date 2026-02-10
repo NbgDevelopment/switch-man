@@ -1,4 +1,4 @@
-namespace NbgDev.SwitchMan.Models;
+namespace NbgDev.SwitchMan.App.Models;
 
 public class Vlan
 {

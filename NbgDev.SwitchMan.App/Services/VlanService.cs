@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
-using NbgDev.SwitchMan.Models;
+using NbgDev.SwitchMan.App.Models;
 
-namespace NbgDev.SwitchMan.Services;
+namespace NbgDev.SwitchMan.App.Services;
 
 public class VlanService
 {
