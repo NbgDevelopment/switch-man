@@ -14,6 +14,10 @@ public class VlanService
 
     public void AddVlan(Vlan vlan)
     {
+        if (_vlans.Any(v => v.VlanId == vlan.VlanId))
+        {
+            throw new InvalidOperationException($"A VLAN with ID {vlan.VlanId} already exists.");
+        }
         _vlans.Add(vlan);
     }
 

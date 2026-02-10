@@ -15,7 +15,7 @@ public partial class SettingsPage : ContentPage
         
         // Get the service from the service provider
         _vlanService = Handler?.MauiContext?.Services.GetService<VlanService>() 
-                      ?? new VlanService();
+                      ?? throw new InvalidOperationException("VlanService not found in dependency injection container.");
         
         Vlans = _vlanService.GetVlans();
         BindingContext = this;
@@ -44,13 +44,20 @@ public partial class SettingsPage : ContentPage
             return;
         }
 
-        var vlan = new Vlan(name, vlanId);
-        _vlanService.AddVlan(vlan);
+        try
+        {
+            var vlan = new Vlan(name, vlanId);
+            _vlanService.AddVlan(vlan);
 
-        VlanNameEntry.Text = string.Empty;
-        VlanIdEntry.Text = string.Empty;
+            VlanNameEntry.Text = string.Empty;
+            VlanIdEntry.Text = string.Empty;
 
-        await DisplayAlert("Success", $"VLAN '{name}' (ID: {vlanId}) added successfully.", "OK");
+            await DisplayAlert("Success", $"VLAN '{name}' (ID: {vlanId}) added successfully.", "OK");
+        }
+        catch (InvalidOperationException ex)
+        {
+            await DisplayAlert("Error", ex.Message, "OK");
+        }
     }
 
     private async void OnDeleteVlan(object sender, EventArgs e)
