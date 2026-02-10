@@ -1,0 +1,1 @@
+This folder is for raw assets that will be included in the app without processing.

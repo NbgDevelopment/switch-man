@@ -28,19 +28,19 @@ public partial class SettingsPage : ContentPage
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            await DisplayAlert("Error", "Please enter a VLAN name.", "OK");
+            await DisplayAlertAsync("Error", "Please enter a VLAN name.", "OK");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(vlanIdText) || !int.TryParse(vlanIdText, out int vlanId))
         {
-            await DisplayAlert("Error", "Please enter a valid VLAN ID.", "OK");
+            await DisplayAlertAsync("Error", "Please enter a valid VLAN ID.", "OK");
             return;
         }
 
         if (vlanId < 1 || vlanId > 4094)
         {
-            await DisplayAlert("Error", "VLAN ID must be between 1 and 4094.", "OK");
+            await DisplayAlertAsync("Error", "VLAN ID must be between 1 and 4094.", "OK");
             return;
         }
 
@@ -52,11 +52,11 @@ public partial class SettingsPage : ContentPage
             VlanNameEntry.Text = string.Empty;
             VlanIdEntry.Text = string.Empty;
 
-            await DisplayAlert("Success", $"VLAN '{name}' (ID: {vlanId}) added successfully.", "OK");
+            await DisplayAlertAsync("Success", $"VLAN '{name}' (ID: {vlanId}) added successfully.", "OK");
         }
         catch (InvalidOperationException ex)
         {
-            await DisplayAlert("Error", ex.Message, "OK");
+            await DisplayAlertAsync("Error", ex.Message, "OK");
         }
     }
 
@@ -64,7 +64,7 @@ public partial class SettingsPage : ContentPage
     {
         if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Vlan vlan)
         {
-            bool confirm = await DisplayAlert("Confirm Delete", 
+            bool confirm = await DisplayAlertAsync("Confirm Delete", 
                 $"Are you sure you want to delete VLAN '{vlan.Name}' (ID: {vlan.VlanId})?", 
                 "Yes", "No");
             
