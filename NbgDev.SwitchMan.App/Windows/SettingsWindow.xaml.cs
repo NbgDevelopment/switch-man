@@ -1,19 +1,15 @@
 using System.Windows;
 using NbgDev.SwitchMan.App.Models;
-using NbgDev.SwitchMan.App.Services;
 
 namespace NbgDev.SwitchMan.App.Windows;
 
 public partial class SettingsWindow : Window
 {
-    private readonly VlanService _vlanService;
-
     public SettingsWindow()
     {
         InitializeComponent();
         
-        _vlanService = new VlanService();
-        VlanListBox.ItemsSource = _vlanService.GetVlans();
+        VlanListBox.ItemsSource = App.VlanService.GetVlans();
     }
 
     private void OnAddVlanClicked(object sender, RoutedEventArgs e)
@@ -42,7 +38,7 @@ public partial class SettingsWindow : Window
         try
         {
             var vlan = new Vlan(name, vlanId);
-            _vlanService.AddVlan(vlan);
+            App.VlanService.AddVlan(vlan);
 
             VlanNameTextBox.Text = string.Empty;
             VlanIdTextBox.Text = string.Empty;
@@ -67,7 +63,7 @@ public partial class SettingsWindow : Window
 
             if (result == MessageBoxResult.Yes)
             {
-                _vlanService.RemoveVlan(vlan);
+                App.VlanService.RemoveVlan(vlan);
             }
         }
         else
