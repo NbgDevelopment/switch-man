@@ -31,6 +31,11 @@ public class VlanService
         var index = _vlans.IndexOf(oldVlan);
         if (index >= 0)
         {
+            // Check if the new VLAN ID already exists (excluding the current VLAN being updated)
+            if (newVlan.VlanId != oldVlan.VlanId && _vlans.Any(v => v.VlanId == newVlan.VlanId))
+            {
+                throw new InvalidOperationException($"A VLAN with ID {newVlan.VlanId} already exists.");
+            }
             _vlans[index] = newVlan;
         }
     }
