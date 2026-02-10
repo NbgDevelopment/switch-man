@@ -1,0 +1,113 @@
+@page "/settings"
+@using NbgDev.SwitchMan.App.Models
+@using NbgDev.SwitchMan.App.Services
+@inject VlanService VlanService
+@rendermode InteractiveServer
+
+<PageTitle>VLAN Settings</PageTitle>
+
+<h1>VLAN Settings</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Add New VLAN</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="vlanName" class="form-label">VLAN Name:</label>
+                    <input type="text" class="form-control" id="vlanName" @bind="vlanName" placeholder="Enter VLAN name" />
+                </div>
+                <div class="mb-3">
+                    <label for="vlanId" class="form-label">VLAN ID:</label>
+                    <input type="number" class="form-control" id="vlanId" @bind="vlanId" placeholder="Enter VLAN ID (1-4094)" />
+                </div>
+                <button class="btn btn-primary" @onclick="AddVlan">Add VLAN</button>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
+                @if (!string.IsNullOrEmpty(successMessage))
+                {
+                    <div class="alert alert-success mt-3">@successMessage</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Configured VLANs</h5>
+            </div>
+            <div class="card-body">
+                @if (VlanService.GetVlans().Any())
+                {
+                    <div class="list-group">
+                        @foreach (var vlan in VlanService.GetVlans())
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@vlan.Name</strong>
+                                    <span class="badge bg-secondary ms-2">VLAN @vlan.VlanId</span>
+                                </div>
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeleteVlan(vlan)">Delete</button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No VLANs configured yet. Add one above!</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string vlanName = string.Empty;
+    private int vlanId;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    private void AddVlan()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(vlanName))
+        {
+            errorMessage = "Please enter a VLAN name.";
+            return;
+        }
+
+        if (vlanId < 1 || vlanId > 4094)
+        {
+            errorMessage = "VLAN ID must be between 1 and 4094.";
+            return;
+        }
+
+        try
+        {
+            var vlan = new Vlan(vlanName, vlanId);
+            VlanService.AddVlan(vlan);
+
+            successMessage = $"VLAN '{vlanName}' (ID: {vlanId}) added successfully.";
+            vlanName = string.Empty;
+            vlanId = 0;
+        }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void DeleteVlan(Vlan vlan)
+    {
+        VlanService.RemoveVlan(vlan);
+        successMessage = $"VLAN '{vlan.Name}' deleted successfully.";
+        errorMessage = string.Empty;
+    }
+}
