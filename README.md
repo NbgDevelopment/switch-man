@@ -14,7 +14,8 @@ Switch Man is a web-based application built with .NET 10 Blazor Server that prov
 - **Input Validation**: Ensures VLAN IDs are within the valid range (1-4094)
 - **Real-time Updates**: Blazor Server provides real-time UI updates
 - **Delete Functionality**: Simple button-based deletion of VLANs
-- **In-Memory Storage**: VLANs are stored in memory during the app session (no persistence yet)
+- **Persistent Storage**: VLANs are stored in JSON format and persist across restarts
+- **Configurable Storage Path**: Storage location can be customized via configuration
 
 ## Platform Support
 
@@ -52,8 +53,14 @@ dotnet run --project NbgDev.SwitchMan.App
 # Build Docker image
 docker build -t switchman:latest .
 
-# Run container
+# Run container with default configuration
 docker run -d -p 8080:8080 --name switchman switchman:latest
+
+# Run container with custom configuration path
+docker run -d -p 8080:8080 \
+  -e SwitchMan__ConfigPath=/data/config \
+  -v /path/on/host:/data/config \
+  --name switchman switchman:latest
 
 # Access the application
 # Open your browser to http://localhost:8080
@@ -67,7 +74,8 @@ NbgDev.SwitchMan.App/
 β"‚   β"œβ"€β"€ Layout/          # Layout components (NavMenu, MainLayout)
 β"‚   └── Pages/           # Blazor pages (Home, Settings)
 β"œβ"€β"€ Models/              # Data models (Vlan)
-β"œβ"€β"€ Services/            # Business logic (VlanService)
+β"œβ"€β"€ Services/            # Business logic (VlanService, ConfigurationService)
+β"œβ"€β"€ config/              # VLAN configuration storage (JSON files)
 └── Program.cs           # Application entry point
 ```
 
@@ -80,22 +88,47 @@ NbgDev.SwitchMan.App/
 5. **View VLANs** - All configured VLANs appear in the list on the right
 6. **Delete VLANs** - Click the "Delete" button next to any VLAN
 
+### Configuration
+
+The application stores VLAN configurations in JSON format. By default, configurations are stored in the `config` directory within the application folder.
+
+**Environment Variables:**
+
+- `SwitchMan__ConfigPath`: Override the default configuration directory path
+  - Default: `config` (relative to application directory)
+  - Example: `/data/config` for a custom absolute path
+
+**Configuration File:**
+
+The application creates a `vlans.json` file in the configured directory with the following structure:
+
+```json
+[
+  {
+    "Name": "Management",
+    "VlanId": 10
+  },
+  {
+    "Name": "Guest",
+    "VlanId": 20
+  }
+]
+```
+
 ## Current Limitations
 
-- VLANs are stored in memory only (cleared when app restarts)
 - No network switch integration yet
 - No authentication or multi-user support
-- No persistent storage
 
 ## Future Enhancements
 
-- Persistent storage (SQLite or database)
 - Network switch communication (SNMP, SSH)
 - Port-to-VLAN mapping
 - Switch discovery and selection
 - Import/export configurations
 - Multi-switch management
 - User authentication and authorization
+- Database backend (SQLite, SQL Server, or MongoDB)
 
 ## Contributing
 

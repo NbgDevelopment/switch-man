@@ -416,3 +416,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Switch Man configuration files
+**/config/vlans.json

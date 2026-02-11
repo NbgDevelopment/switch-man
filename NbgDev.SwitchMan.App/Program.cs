@@ -13,6 +13,9 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Register Configuration service as singleton
+builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
+
 // Register VLAN service as singleton
 builder.Services.AddSingleton<VlanService>();
 
