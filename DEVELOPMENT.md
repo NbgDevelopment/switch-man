@@ -82,21 +82,93 @@ Access services in components:
 
 1. Create `.razor` file in `Components/Pages/` folder
 2. Add `@page "/route"` directive at the top
-3. Use `@inject` to access services
-4. Add `@rendermode InteractiveServer` for interactive components
+3. Add `@rendermode InteractiveServer` for interactive components
+4. Create a corresponding `.razor.cs` code-behind file (see Code-Behind Pattern below)
 
-Example:
+Example `.razor` file:
 ```razor
 @page "/mypage"
-@inject MyService MyService
 @rendermode InteractiveServer
 
 <h1>My Page</h1>
+```
 
-@code {
-    // Component logic
+Example `.razor.cs` code-behind file:
+```csharp
+using Microsoft.AspNetCore.Components;
+
+namespace NbgDev.SwitchMan.App.Components.Pages;
+
+public partial class MyPage
+{
+    [Inject]
+    private MyService MyService { get; set; } = null!;
+
+    // Component logic, properties, and methods
 }
 ```
+
+### Code-Behind Pattern
+
+**All Razor components MUST use the code-behind pattern** to separate markup from logic:
+
+1. **Create the code-behind file**:
+   - Name: `ComponentName.razor.cs` (e.g., `Home.razor.cs`)
+   - Location: Same directory as the `.razor` file
+   - Namespace: Match the component's location (e.g., `NbgDev.SwitchMan.App.Components.Pages`)
+   - Class: `public partial class ComponentName`
+
+2. **Structure of code-behind files**:
+   ```csharp
+   using Microsoft.AspNetCore.Components;
+   using NbgDev.SwitchMan.App.Models;
+   using NbgDev.SwitchMan.App.Services;
+
+   namespace NbgDev.SwitchMan.App.Components.Pages;
+
+   public partial class ComponentName
+   {
+       // Dependency injection using [Inject] attribute
+       [Inject]
+       private MyService MyService { get; set; } = null!;
+
+       // Parameters using [Parameter] attribute
+       [Parameter]
+       public string Title { get; set; } = string.Empty;
+
+       // Component state (private fields)
+       private string myField = string.Empty;
+
+       // Component methods
+       private void MyMethod()
+       {
+           // Logic here
+       }
+
+       // Lifecycle methods
+       protected override void OnInitialized()
+       {
+           // Initialization logic
+       }
+   }
+   ```
+
+3. **Razor file should contain only**:
+   - Directives (`@page`, `@rendermode`, etc.)
+   - HTML markup
+   - Razor syntax for data binding and rendering
+
+4. **DO NOT use `@code` blocks** in `.razor` files
+   - All C# code belongs in the `.razor.cs` code-behind file
+   - This improves code organization, testability, and maintainability
+
+5. **DO NOT use `@inject` in `.razor` files**
+   - Use `[Inject]` attribute on properties in the code-behind file instead
+   - This keeps all dependencies clearly defined in one place
+
+6. **DO NOT use `@using` directives in individual `.razor` files**
+   - Common usings are defined in `Components/_Imports.razor`
+   - Component-specific usings go in the `.razor.cs` code-behind file
 
 ## Building and Running
 
@@ -146,20 +218,27 @@ docker rm switchman
 
 ## Best Practices
 
-1. **Razor Naming**:
+1. **Code-Behind Pattern** (REQUIRED):
+   - **ALWAYS** create a `.razor.cs` code-behind file for components with logic
+   - **NEVER** use `@code` blocks in `.razor` files
+   - **NEVER** use `@inject` in `.razor` files (use `[Inject]` in code-behind instead)
+   - Keep markup in `.razor`, logic in `.razor.cs`
+   - See "Code-Behind Pattern" section above for details
+
+2. **Razor Naming**:
    - Use PascalCase for component names
    - Use lowercase for parameters
 
-2. **State Management**:
+3. **State Management**:
    - Use services for shared state
    - Call `StateHasChanged()` when updating UI from async operations
 
-3. **Performance**:
+4. **Performance**:
    - Use `@key` directive for list items
    - Avoid unnecessary re-renders
    - Use `ShouldRender()` to optimize rendering
 
-4. **Accessibility**:
+5. **Accessibility**:
    - Use semantic HTML elements
    - Add ARIA labels where needed
    - Ensure keyboard navigation works
