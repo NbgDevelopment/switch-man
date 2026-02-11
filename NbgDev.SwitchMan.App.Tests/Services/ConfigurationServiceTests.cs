@@ -208,10 +208,9 @@ public class ConfigurationServiceTests
 
         // Assert
         loadedVlans.Count.ShouldBe(3);
-        for (int i = 0; i < originalVlans.Count; i++)
+        foreach (var original in originalVlans)
         {
-            loadedVlans[i].Name.ShouldBe(originalVlans[i].Name);
-            loadedVlans[i].VlanId.ShouldBe(originalVlans[i].VlanId);
+            loadedVlans.ShouldContain(v => v.Name == original.Name && v.VlanId == original.VlanId);
         }
     }
 }
