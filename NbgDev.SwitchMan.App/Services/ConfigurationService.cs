@@ -5,6 +5,12 @@ namespace NbgDev.SwitchMan.App.Services;
 
 public class ConfigurationService : IConfigurationService
 {
+    private const string DefaultConfigPath = "config";
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
     private readonly string _configFilePath;
     private readonly ILogger<ConfigurationService> _logger;
 
@@ -13,7 +19,7 @@ public class ConfigurationService : IConfigurationService
         _logger = logger;
         
         // Read config path from configuration (can be overridden by environment variable)
-        var configPath = configuration.GetValue<string>("SwitchMan:ConfigPath") ?? "config";
+        var configPath = configuration.GetValue<string>("SwitchMan:ConfigPath") ?? DefaultConfigPath;
         
         try
         {
@@ -56,11 +62,7 @@ public class ConfigurationService : IConfigurationService
     {
         try
         {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-            var json = JsonSerializer.Serialize(vlans, options);
+            var json = JsonSerializer.Serialize(vlans, JsonOptions);
             File.WriteAllText(_configFilePath, json);
             _logger.LogInformation("Saved {Count} VLANs to configuration file.", vlans.Count());
         }
