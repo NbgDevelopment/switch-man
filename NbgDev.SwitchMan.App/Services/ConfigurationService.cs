@@ -15,8 +15,16 @@ public class ConfigurationService : IConfigurationService
         // Read config path from configuration (can be overridden by environment variable)
         var configPath = configuration.GetValue<string>("SwitchMan:ConfigPath") ?? "config";
         
-        // Ensure the config directory exists
-        Directory.CreateDirectory(configPath);
+        try
+        {
+            // Ensure the config directory exists
+            Directory.CreateDirectory(configPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create configuration directory at '{ConfigPath}'.", configPath);
+            throw new InvalidOperationException($"Failed to create configuration directory at '{configPath}'. Please check permissions.", ex);
+        }
         
         _configFilePath = Path.Combine(configPath, "vlans.json");
         _logger.LogInformation("Configuration file path: {ConfigFilePath}", _configFilePath);
@@ -58,8 +66,8 @@ public class ConfigurationService : IConfigurationService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error saving configuration file.");
-            throw;
+            _logger.LogError(ex, "Failed to save VLAN configuration to file.");
+            throw new InvalidOperationException("Failed to save VLAN configuration. Please check file permissions and disk space.", ex);
         }
     }
 }
