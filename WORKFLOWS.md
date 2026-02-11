@@ -13,7 +13,7 @@ The CI workflow builds and tests the application on every push.
 - Manually via workflow_dispatch (see "Running Workflows Manually" below)
 
 **What it does:**
-1. Checks out the code
+1. Checks out the code with full git history (required for GitVersioning)
 2. Sets up .NET 10
 3. Restores dependencies
 4. Builds the solution in Release mode with warnings treated as errors
