@@ -26,6 +26,13 @@ Switch Man is a web-based application built with .NET 10 Blazor Server that prov
 - .NET 10 SDK (for development)
 - Docker (for deployment)
 
+## CI/CD
+
+This project uses GitHub Actions for automated building, testing, and Docker image publishing. See [WORKFLOWS.md](WORKFLOWS.md) for details on:
+- Running workflows manually from any branch
+- GitVersioning configuration
+- Published Docker images
+
 ## Building
 
 ```bash

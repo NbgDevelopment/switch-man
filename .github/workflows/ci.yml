@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for GitVersioning
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore NbgDev.SwitchMan.slnx
+
+      - name: Build
+        run: dotnet build NbgDev.SwitchMan.slnx --no-restore --configuration Release /p:TreatWarningsAsErrors=true
+
+      - name: Test
+        run: dotnet test NbgDev.SwitchMan.slnx --no-build --configuration Release --verbosity normal
