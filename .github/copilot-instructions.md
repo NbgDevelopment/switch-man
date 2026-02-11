@@ -57,6 +57,10 @@ NbgDev.SwitchMan.App/
    - Follow standard .NET naming conventions
    - Use async/await for async operations
    - Validate user input before processing
+5. **Dependency Licensing**:
+   - Only use NuGet packages with MIT license
+   - Verify license compatibility before adding new dependencies
+   - This ensures maximum compatibility and no commercial licensing restrictions
 
 ## VLAN ID Validation Rules
 - VLAN ID must be numeric

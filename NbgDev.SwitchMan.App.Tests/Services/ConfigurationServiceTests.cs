@@ -1,34 +1,36 @@
-using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using NbgDev.SwitchMan.App.Models;
 using NbgDev.SwitchMan.App.Services;
+using Shouldly;
 using System.Text.Json;
 
 namespace NbgDev.SwitchMan.App.Tests.Services;
 
-public class ConfigurationServiceTests : IDisposable
+[TestFixture]
+public class ConfigurationServiceTests
 {
-    private readonly Mock<IConfiguration> _mockConfiguration;
-    private readonly Mock<ILogger<ConfigurationService>> _mockLogger;
-    private readonly string _testConfigPath;
-    private readonly string _testConfigFilePath;
+    private IConfiguration _mockConfiguration;
+    private ILogger<ConfigurationService> _mockLogger;
+    private string _testConfigPath;
+    private string _testConfigFilePath;
 
-    public ConfigurationServiceTests()
+    [SetUp]
+    public void SetUp()
     {
-        _mockConfiguration = new Mock<IConfiguration>();
-        _mockLogger = new Mock<ILogger<ConfigurationService>>();
+        _mockConfiguration = Substitute.For<IConfiguration>();
+        _mockLogger = Substitute.For<ILogger<ConfigurationService>>();
         
         // Use a unique temp directory for each test
         _testConfigPath = Path.Combine(Path.GetTempPath(), $"switchman_test_{Guid.NewGuid()}");
         _testConfigFilePath = Path.Combine(_testConfigPath, "vlans.json");
         
-        _mockConfiguration.Setup(x => x.GetSection("SwitchMan:ConfigPath").Value)
-            .Returns(_testConfigPath);
+        _mockConfiguration.GetSection("SwitchMan:ConfigPath").Value.Returns(_testConfigPath);
     }
 
-    public void Dispose()
+    [TearDown]
+    public void TearDown()
     {
         // Clean up test directory
         if (Directory.Exists(_testConfigPath))
@@ -37,48 +39,46 @@ public class ConfigurationServiceTests : IDisposable
         }
     }
 
-    [Fact]
+    [Test]
     public void Constructor_ShouldCreateConfigDirectory()
     {
         // Act
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
+        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
 
         // Assert
-        Directory.Exists(_testConfigPath).Should().BeTrue();
+        Directory.Exists(_testConfigPath).ShouldBeTrue();
     }
 
-    [Fact]
+    [Test]
     public void Constructor_ShouldUseDefaultConfigPath_WhenNotConfigured()
     {
         // Arrange
-        var mockConfig = new Mock<IConfiguration>();
-        mockConfig.Setup(x => x.GetSection("SwitchMan:ConfigPath").Value)
-            .Returns((string?)null);
+        var mockConfig = Substitute.For<IConfiguration>();
+        mockConfig.GetSection("SwitchMan:ConfigPath").Value.Returns((string?)null);
 
         // Act & Assert - should not throw
-        var act = () => new ConfigurationService(mockConfig.Object, _mockLogger.Object);
-        act.Should().NotThrow();
+        Should.NotThrow(() => new ConfigurationService(mockConfig, _mockLogger));
     }
 
-    [Fact]
+    [Test]
     public void LoadConfiguration_ShouldReturnEmptyList_WhenFileDoesNotExist()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
+        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
 
         // Act
         var vlans = service.LoadConfiguration();
 
         // Assert
-        vlans.Should().NotBeNull();
-        vlans.Should().BeEmpty();
+        vlans.ShouldNotBeNull();
+        vlans.ShouldBeEmpty();
     }
 
-    [Fact]
+    [Test]
     public void LoadConfiguration_ShouldReturnVlans_WhenFileExists()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
+        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
         var testVlans = new List<Vlan>
         {
             new Vlan("Management", 10),
@@ -92,31 +92,31 @@ public class ConfigurationServiceTests : IDisposable
         var vlans = service.LoadConfiguration();
 
         // Assert
-        vlans.Should().HaveCount(2);
-        vlans.Should().Contain(v => v.Name == "Management" && v.VlanId == 10);
-        vlans.Should().Contain(v => v.Name == "Guest" && v.VlanId == 20);
+        vlans.Count.ShouldBe(2);
+        vlans.ShouldContain(v => v.Name == "Management" && v.VlanId == 10);
+        vlans.ShouldContain(v => v.Name == "Guest" && v.VlanId == 20);
     }
 
-    [Fact]
+    [Test]
     public void LoadConfiguration_ShouldReturnEmptyList_WhenFileIsCorrupted()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
+        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
         File.WriteAllText(_testConfigFilePath, "invalid json content");
 
         // Act
         var vlans = service.LoadConfiguration();
 
         // Assert
-        vlans.Should().NotBeNull();
-        vlans.Should().BeEmpty();
+        vlans.ShouldNotBeNull();
+        vlans.ShouldBeEmpty();
     }
 
-    [Fact]
+    [Test]
     public void SaveConfiguration_ShouldCreateFile_WhenFileDoesNotExist()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
+        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
         var vlans = new List<Vlan>
         {
             new Vlan("Production", 100)
@@ -126,14 +126,14 @@ public class ConfigurationServiceTests : IDisposable
         service.SaveConfiguration(vlans);
 
         // Assert
-        File.Exists(_testConfigFilePath).Should().BeTrue();
+        File.Exists(_testConfigFilePath).ShouldBeTrue();
     }
 
-    [Fact]
+    [Test]
     public void SaveConfiguration_ShouldWriteCorrectJson()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
+        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
         var vlans = new List<Vlan>
         {
             new Vlan("Development", 50),
@@ -147,17 +147,17 @@ public class ConfigurationServiceTests : IDisposable
         var json = File.ReadAllText(_testConfigFilePath);
         var loadedVlans = JsonSerializer.Deserialize<List<Vlan>>(json);
         
-        loadedVlans.Should().NotBeNull();
-        loadedVlans.Should().HaveCount(2);
-        loadedVlans.Should().Contain(v => v.Name == "Development" && v.VlanId == 50);
-        loadedVlans.Should().Contain(v => v.Name == "Testing" && v.VlanId == 60);
+        loadedVlans.ShouldNotBeNull();
+        loadedVlans.Count.ShouldBe(2);
+        loadedVlans.ShouldContain(v => v.Name == "Development" && v.VlanId == 50);
+        loadedVlans.ShouldContain(v => v.Name == "Testing" && v.VlanId == 60);
     }
 
-    [Fact]
+    [Test]
     public void SaveConfiguration_ShouldOverwriteExistingFile()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
+        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
         var initialVlans = new List<Vlan> { new Vlan("Initial", 1) };
         var updatedVlans = new List<Vlan> { new Vlan("Updated", 2) };
 
@@ -169,32 +169,32 @@ public class ConfigurationServiceTests : IDisposable
         var json = File.ReadAllText(_testConfigFilePath);
         var loadedVlans = JsonSerializer.Deserialize<List<Vlan>>(json);
         
-        loadedVlans.Should().HaveCount(1);
-        loadedVlans.Should().Contain(v => v.Name == "Updated" && v.VlanId == 2);
+        loadedVlans.Count.ShouldBe(1);
+        loadedVlans.ShouldContain(v => v.Name == "Updated" && v.VlanId == 2);
     }
 
-    [Fact]
+    [Test]
     public void SaveConfiguration_ShouldSaveEmptyList()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
+        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
         var vlans = new List<Vlan>();
 
         // Act
         service.SaveConfiguration(vlans);
 
         // Assert
-        File.Exists(_testConfigFilePath).Should().BeTrue();
+        File.Exists(_testConfigFilePath).ShouldBeTrue();
         var json = File.ReadAllText(_testConfigFilePath);
         var loadedVlans = JsonSerializer.Deserialize<List<Vlan>>(json);
-        loadedVlans.Should().BeEmpty();
+        loadedVlans.ShouldBeEmpty();
     }
 
-    [Fact]
+    [Test]
     public void LoadConfiguration_AfterSaveConfiguration_ShouldReturnSameVlans()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
+        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
         var originalVlans = new List<Vlan>
         {
             new Vlan("VLAN1", 10),
@@ -207,8 +207,11 @@ public class ConfigurationServiceTests : IDisposable
         var loadedVlans = service.LoadConfiguration();
 
         // Assert
-        loadedVlans.Should().HaveCount(3);
-        loadedVlans.Should().BeEquivalentTo(originalVlans, options => 
-            options.Including(v => v.Name).Including(v => v.VlanId));
+        loadedVlans.Count.ShouldBe(3);
+        for (int i = 0; i < originalVlans.Count; i++)
+        {
+            loadedVlans[i].Name.ShouldBe(originalVlans[i].Name);
+            loadedVlans[i].VlanId.ShouldBe(originalVlans[i].VlanId);
+        }
     }
 }

@@ -1,23 +1,25 @@
-using FluentAssertions;
-using Moq;
+using NSubstitute;
 using NbgDev.SwitchMan.App.Models;
 using NbgDev.SwitchMan.App.Services;
+using Shouldly;
 
 namespace NbgDev.SwitchMan.App.Tests.Services;
 
+[TestFixture]
 public class VlanServiceTests
 {
-    private readonly Mock<IConfigurationService> _mockConfigurationService;
-    private readonly VlanService _vlanService;
+    private IConfigurationService _mockConfigurationService;
+    private VlanService _vlanService;
 
-    public VlanServiceTests()
+    [SetUp]
+    public void SetUp()
     {
-        _mockConfigurationService = new Mock<IConfigurationService>();
-        _mockConfigurationService.Setup(x => x.LoadConfiguration()).Returns(new List<Vlan>());
-        _vlanService = new VlanService(_mockConfigurationService.Object);
+        _mockConfigurationService = Substitute.For<IConfigurationService>();
+        _mockConfigurationService.LoadConfiguration().Returns(new List<Vlan>());
+        _vlanService = new VlanService(_mockConfigurationService);
     }
 
-    [Fact]
+    [Test]
     public void Constructor_ShouldLoadExistingConfiguration()
     {
         // Arrange
@@ -26,31 +28,31 @@ public class VlanServiceTests
             new Vlan("Management", 10),
             new Vlan("Guest", 20)
         };
-        var mockConfigService = new Mock<IConfigurationService>();
-        mockConfigService.Setup(x => x.LoadConfiguration()).Returns(existingVlans);
+        var mockConfigService = Substitute.For<IConfigurationService>();
+        mockConfigService.LoadConfiguration().Returns(existingVlans);
 
         // Act
-        var service = new VlanService(mockConfigService.Object);
+        var service = new VlanService(mockConfigService);
         var vlans = service.GetVlans();
 
         // Assert
-        vlans.Should().HaveCount(2);
-        vlans.Should().Contain(v => v.Name == "Management" && v.VlanId == 10);
-        vlans.Should().Contain(v => v.Name == "Guest" && v.VlanId == 20);
+        vlans.Count.ShouldBe(2);
+        vlans.ShouldContain(v => v.Name == "Management" && v.VlanId == 10);
+        vlans.ShouldContain(v => v.Name == "Guest" && v.VlanId == 20);
     }
 
-    [Fact]
+    [Test]
     public void GetVlans_ShouldReturnEmptyCollection_WhenNoVlansAdded()
     {
         // Act
         var vlans = _vlanService.GetVlans();
 
         // Assert
-        vlans.Should().NotBeNull();
-        vlans.Should().BeEmpty();
+        vlans.ShouldNotBeNull();
+        vlans.ShouldBeEmpty();
     }
 
-    [Fact]
+    [Test]
     public void AddVlan_ShouldAddVlanToCollection()
     {
         // Arrange
@@ -61,11 +63,11 @@ public class VlanServiceTests
         var vlans = _vlanService.GetVlans();
 
         // Assert
-        vlans.Should().ContainSingle();
-        vlans.Should().Contain(v => v.Name == "Production" && v.VlanId == 100);
+        vlans.Count.ShouldBe(1);
+        vlans.ShouldContain(v => v.Name == "Production" && v.VlanId == 100);
     }
 
-    [Fact]
+    [Test]
     public void AddVlan_ShouldCallSaveConfiguration()
     {
         // Arrange
@@ -75,10 +77,10 @@ public class VlanServiceTests
         _vlanService.AddVlan(vlan);
 
         // Assert
-        _mockConfigurationService.Verify(x => x.SaveConfiguration(It.IsAny<IEnumerable<Vlan>>()), Times.Once);
+        _mockConfigurationService.Received(1).SaveConfiguration(Arg.Any<IEnumerable<Vlan>>());
     }
 
-    [Fact]
+    [Test]
     public void AddVlan_ShouldThrowException_WhenVlanIdAlreadyExists()
     {
         // Arrange
@@ -87,14 +89,13 @@ public class VlanServiceTests
 
         // Act
         _vlanService.AddVlan(vlan1);
-        var act = () => _vlanService.AddVlan(vlan2);
 
         // Assert
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("A VLAN with ID 100 already exists.");
+        Should.Throw<InvalidOperationException>(() => _vlanService.AddVlan(vlan2))
+            .Message.ShouldBe("A VLAN with ID 100 already exists.");
     }
 
-    [Fact]
+    [Test]
     public void RemoveVlan_ShouldRemoveVlanFromCollection()
     {
         // Arrange
@@ -106,25 +107,25 @@ public class VlanServiceTests
         var vlans = _vlanService.GetVlans();
 
         // Assert
-        vlans.Should().BeEmpty();
+        vlans.ShouldBeEmpty();
     }
 
-    [Fact]
+    [Test]
     public void RemoveVlan_ShouldCallSaveConfiguration()
     {
         // Arrange
         var vlan = new Vlan("ToRemove", 200);
         _vlanService.AddVlan(vlan);
-        _mockConfigurationService.Reset();
+        _mockConfigurationService.ClearReceivedCalls();
 
         // Act
         _vlanService.RemoveVlan(vlan);
 
         // Assert
-        _mockConfigurationService.Verify(x => x.SaveConfiguration(It.IsAny<IEnumerable<Vlan>>()), Times.Once);
+        _mockConfigurationService.Received(1).SaveConfiguration(Arg.Any<IEnumerable<Vlan>>());
     }
 
-    [Fact]
+    [Test]
     public void UpdateVlan_ShouldUpdateVlanInCollection()
     {
         // Arrange
@@ -137,11 +138,11 @@ public class VlanServiceTests
         var vlans = _vlanService.GetVlans();
 
         // Assert
-        vlans.Should().ContainSingle();
-        vlans.Should().Contain(v => v.Name == "NewName" && v.VlanId == 300);
+        vlans.Count.ShouldBe(1);
+        vlans.ShouldContain(v => v.Name == "NewName" && v.VlanId == 300);
     }
 
-    [Fact]
+    [Test]
     public void UpdateVlan_ShouldUpdateVlanIdWhenNotDuplicate()
     {
         // Arrange
@@ -154,11 +155,11 @@ public class VlanServiceTests
         var vlans = _vlanService.GetVlans();
 
         // Assert
-        vlans.Should().ContainSingle();
-        vlans.Should().Contain(v => v.VlanId == 400);
+        vlans.Count.ShouldBe(1);
+        vlans.ShouldContain(v => v.VlanId == 400);
     }
 
-    [Fact]
+    [Test]
     public void UpdateVlan_ShouldThrowException_WhenNewVlanIdAlreadyExists()
     {
         // Arrange
@@ -169,15 +170,12 @@ public class VlanServiceTests
 
         var updatedVlan = new Vlan("VLAN1_Updated", 200); // Trying to change to existing VLAN ID
 
-        // Act
-        var act = () => _vlanService.UpdateVlan(vlan1, updatedVlan);
-
         // Assert
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("A VLAN with ID 200 already exists.");
+        Should.Throw<InvalidOperationException>(() => _vlanService.UpdateVlan(vlan1, updatedVlan))
+            .Message.ShouldBe("A VLAN with ID 200 already exists.");
     }
 
-    [Fact]
+    [Test]
     public void UpdateVlan_ShouldNotThrowException_WhenVlanIdRemainsTheSame()
     {
         // Arrange
@@ -185,32 +183,29 @@ public class VlanServiceTests
         var newVlan = new Vlan("NewName", 100); // Same VLAN ID
         _vlanService.AddVlan(oldVlan);
 
-        // Act
-        var act = () => _vlanService.UpdateVlan(oldVlan, newVlan);
-
-        // Assert
-        act.Should().NotThrow();
+        // Act & Assert
+        Should.NotThrow(() => _vlanService.UpdateVlan(oldVlan, newVlan));
         var vlans = _vlanService.GetVlans();
-        vlans.Should().Contain(v => v.Name == "NewName" && v.VlanId == 100);
+        vlans.ShouldContain(v => v.Name == "NewName" && v.VlanId == 100);
     }
 
-    [Fact]
+    [Test]
     public void UpdateVlan_ShouldCallSaveConfiguration()
     {
         // Arrange
         var oldVlan = new Vlan("OldName", 300);
         var newVlan = new Vlan("NewName", 300);
         _vlanService.AddVlan(oldVlan);
-        _mockConfigurationService.Reset();
+        _mockConfigurationService.ClearReceivedCalls();
 
         // Act
         _vlanService.UpdateVlan(oldVlan, newVlan);
 
         // Assert
-        _mockConfigurationService.Verify(x => x.SaveConfiguration(It.IsAny<IEnumerable<Vlan>>()), Times.Once);
+        _mockConfigurationService.Received(1).SaveConfiguration(Arg.Any<IEnumerable<Vlan>>());
     }
 
-    [Fact]
+    [Test]
     public void UpdateVlan_ShouldDoNothing_WhenOldVlanNotFound()
     {
         // Arrange
@@ -222,6 +217,6 @@ public class VlanServiceTests
         var vlans = _vlanService.GetVlans();
 
         // Assert
-        vlans.Should().BeEmpty();
+        vlans.ShouldBeEmpty();
     }
 }
