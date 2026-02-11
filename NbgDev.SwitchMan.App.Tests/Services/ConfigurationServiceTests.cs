@@ -11,10 +11,10 @@ namespace NbgDev.SwitchMan.App.Tests.Services;
 [TestFixture]
 public class ConfigurationServiceTests
 {
-    private IConfiguration _mockConfiguration;
-    private ILogger<ConfigurationService> _mockLogger;
-    private string _testConfigPath;
-    private string _testConfigFilePath;
+    private IConfiguration _mockConfiguration = null!;
+    private ILogger<ConfigurationService> _mockLogger = null!;
+    private string _testConfigPath = null!;
+    private string _testConfigFilePath = null!;
 
     [SetUp]
     public void SetUp()
@@ -169,6 +169,7 @@ public class ConfigurationServiceTests
         var json = File.ReadAllText(_testConfigFilePath);
         var loadedVlans = JsonSerializer.Deserialize<List<Vlan>>(json);
         
+        loadedVlans.ShouldNotBeNull();
         loadedVlans.Count.ShouldBe(1);
         loadedVlans.ShouldContain(v => v.Name == "Updated" && v.VlanId == 2);
     }

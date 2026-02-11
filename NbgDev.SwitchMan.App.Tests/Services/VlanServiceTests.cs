@@ -8,8 +8,8 @@ namespace NbgDev.SwitchMan.App.Tests.Services;
 [TestFixture]
 public class VlanServiceTests
 {
-    private IConfigurationService _mockConfigurationService;
-    private VlanService _vlanService;
+    private IConfigurationService _mockConfigurationService = null!;
+    private VlanService _vlanService = null!;
 
     [SetUp]
     public void SetUp()
