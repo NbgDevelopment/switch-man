@@ -1,5 +1,3 @@
-@using NbgDev.SwitchMan.App.Models
-
 <div class="card mb-3">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-start">
@@ -25,16 +23,3 @@
     </div>
 </div>
 
-@code {
-    [Parameter]
-    public Switch Switch { get; set; } = null!;
-
-    [Parameter]
-    public EventCallback OnMoveUp { get; set; }
-
-    [Parameter]
-    public EventCallback OnMoveDown { get; set; }
-
-    [Parameter]
-    public EventCallback OnDelete { get; set; }
-}
