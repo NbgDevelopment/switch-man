@@ -12,6 +12,7 @@ public class ConfigurationService : IConfigurationService
     };
 
     private readonly string _configFilePath;
+    private readonly string _switchesFilePath;
     private readonly ILogger<ConfigurationService> _logger;
 
     public ConfigurationService(IConfiguration configuration, ILogger<ConfigurationService> logger)
@@ -33,7 +34,9 @@ public class ConfigurationService : IConfigurationService
         }
         
         _configFilePath = Path.Combine(configPath, "vlans.json");
+        _switchesFilePath = Path.Combine(configPath, "switches.json");
         _logger.LogInformation("Configuration file path: {ConfigFilePath}", _configFilePath);
+        _logger.LogInformation("Switches file path: {SwitchesFilePath}", _switchesFilePath);
     }
 
     public List<Vlan> LoadConfiguration()
@@ -70,6 +73,43 @@ public class ConfigurationService : IConfigurationService
         {
             _logger.LogError(ex, "Failed to save VLAN configuration to file.");
             throw new InvalidOperationException("Failed to save VLAN configuration. Please check file permissions and disk space.", ex);
+        }
+    }
+
+    public List<Switch> LoadSwitches()
+    {
+        try
+        {
+            if (!File.Exists(_switchesFilePath))
+            {
+                _logger.LogInformation("Switches configuration file not found. Starting with empty configuration.");
+                return new List<Switch>();
+            }
+
+            var json = File.ReadAllText(_switchesFilePath);
+            var switches = JsonSerializer.Deserialize<List<Switch>>(json) ?? new List<Switch>();
+            _logger.LogInformation("Loaded {Count} switches from configuration file.", switches.Count);
+            return switches;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading switches configuration file. Starting with empty configuration.");
+            return new List<Switch>();
+        }
+    }
+
+    public void SaveSwitches(IEnumerable<Switch> switches)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(switches, JsonOptions);
+            File.WriteAllText(_switchesFilePath, json);
+            _logger.LogInformation("Saved {Count} switches to configuration file.", switches.Count());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save switches configuration to file.");
+            throw new InvalidOperationException("Failed to save switches configuration. Please check file permissions and disk space.", ex);
         }
     }
 }
