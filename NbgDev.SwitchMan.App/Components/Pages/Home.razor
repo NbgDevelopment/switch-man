@@ -113,6 +113,12 @@
             return;
         }
 
+        if (!System.Net.IPAddress.TryParse(ipAddress, out _))
+        {
+            errorMessage = "Please enter a valid IP address.";
+            return;
+        }
+
         var newSwitch = new Switch(switchName, ipAddress);
         SwitchService.AddSwitch(newSwitch);
         CloseAddDialog();

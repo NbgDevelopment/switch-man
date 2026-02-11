@@ -419,3 +419,4 @@ FodyWeavers.xsd
 
 # Switch Man configuration files
 **/config/vlans.json
+**/config/switches.json
