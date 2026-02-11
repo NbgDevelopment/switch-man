@@ -6,6 +6,19 @@ namespace NbgDev.SwitchMan.App.Services;
 public class VlanService
 {
     private readonly ObservableCollection<Vlan> _vlans = new();
+    private readonly IConfigurationService _configurationService;
+
+    public VlanService(IConfigurationService configurationService)
+    {
+        _configurationService = configurationService;
+        
+        // Load existing configuration at startup
+        var loadedVlans = _configurationService.LoadConfiguration();
+        foreach (var vlan in loadedVlans)
+        {
+            _vlans.Add(vlan);
+        }
+    }
 
     public ObservableCollection<Vlan> GetVlans()
     {
@@ -19,11 +32,13 @@ public class VlanService
             throw new InvalidOperationException($"A VLAN with ID {vlan.VlanId} already exists.");
         }
         _vlans.Add(vlan);
+        _configurationService.SaveConfiguration(_vlans);
     }
 
     public void RemoveVlan(Vlan vlan)
     {
         _vlans.Remove(vlan);
+        _configurationService.SaveConfiguration(_vlans);
     }
 
     public void UpdateVlan(Vlan oldVlan, Vlan newVlan)
@@ -37,6 +52,7 @@ public class VlanService
                 throw new InvalidOperationException($"A VLAN with ID {newVlan.VlanId} already exists.");
             }
             _vlans[index] = newVlan;
+            _configurationService.SaveConfiguration(_vlans);
         }
     }
 }
