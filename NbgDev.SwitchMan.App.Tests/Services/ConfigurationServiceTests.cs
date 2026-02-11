@@ -174,48 +174,6 @@ public class ConfigurationServiceTests : IDisposable
     }
 
     [Fact]
-    public void SaveConfiguration_ShouldThrowException_WhenDirectoryIsReadOnly()
-    {
-        // Arrange
-        var service = new ConfigurationService(_mockConfiguration.Object, _mockLogger.Object);
-        var vlans = new List<Vlan> { new Vlan("Test", 1) };
-
-        // Make directory read-only
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Directory.SetCurrentDirectory("/");
-            var readOnlyPath = Path.Combine("/tmp", $"readonly_{Guid.NewGuid()}");
-            Directory.CreateDirectory(readOnlyPath);
-            
-            var mockReadOnlyConfig = new Mock<IConfiguration>();
-            mockReadOnlyConfig.Setup(x => x.GetSection("SwitchMan:ConfigPath").Value)
-                .Returns(readOnlyPath);
-            
-            var readOnlyService = new ConfigurationService(mockReadOnlyConfig.Object, _mockLogger.Object);
-            
-            // Make directory read-only (Linux/Mac only)
-            var dirInfo = new DirectoryInfo(readOnlyPath);
-            dirInfo.Attributes |= FileAttributes.ReadOnly;
-
-            try
-            {
-                // Act
-                var act = () => readOnlyService.SaveConfiguration(vlans);
-
-                // Assert - might throw or might succeed depending on permissions
-                // Just ensure it doesn't crash unexpectedly
-                act.Should().NotBeNull();
-            }
-            finally
-            {
-                // Cleanup
-                dirInfo.Attributes &= ~FileAttributes.ReadOnly;
-                Directory.Delete(readOnlyPath, true);
-            }
-        }
-    }
-
-    [Fact]
     public void SaveConfiguration_ShouldSaveEmptyList()
     {
         // Arrange
