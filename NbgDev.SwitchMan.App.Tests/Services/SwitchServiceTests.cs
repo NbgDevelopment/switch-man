@@ -1,0 +1,192 @@
+using NSubstitute;
+using NbgDev.SwitchMan.App.Models;
+using NbgDev.SwitchMan.App.Services;
+using Shouldly;
+
+namespace NbgDev.SwitchMan.App.Tests.Services;
+
+[TestFixture]
+public class SwitchServiceTests
+{
+    private IConfigurationService _mockConfigurationService = null!;
+    private SwitchService _switchService = null!;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _mockConfigurationService = Substitute.For<IConfigurationService>();
+        _mockConfigurationService.LoadSwitches().Returns(new List<Switch>());
+        _switchService = new SwitchService(_mockConfigurationService);
+    }
+
+    [Test]
+    public void Constructor_ShouldLoadExistingSwitches()
+    {
+        // Arrange
+        var existingSwitches = new List<Switch>
+        {
+            new Switch("Main Switch", "192.168.1.1"),
+            new Switch("Backup Switch", "192.168.1.2")
+        };
+        var mockConfigService = Substitute.For<IConfigurationService>();
+        mockConfigService.LoadSwitches().Returns(existingSwitches);
+
+        // Act
+        var service = new SwitchService(mockConfigService);
+        var switches = service.GetSwitches();
+
+        // Assert
+        switches.Count.ShouldBe(2);
+        switches.ShouldContain(s => s.Name == "Main Switch" && s.IpAddress == "192.168.1.1");
+        switches.ShouldContain(s => s.Name == "Backup Switch" && s.IpAddress == "192.168.1.2");
+    }
+
+    [Test]
+    public void GetSwitches_ShouldReturnEmptyCollection_WhenNoSwitchesAdded()
+    {
+        // Act
+        var switches = _switchService.GetSwitches();
+
+        // Assert
+        switches.ShouldNotBeNull();
+        switches.ShouldBeEmpty();
+    }
+
+    [Test]
+    public void AddSwitch_ShouldAddSwitchToCollection()
+    {
+        // Arrange
+        var sw = new Switch("Core Switch", "10.0.0.1");
+
+        // Act
+        _switchService.AddSwitch(sw);
+        var switches = _switchService.GetSwitches();
+
+        // Assert
+        switches.Count.ShouldBe(1);
+        switches.ShouldContain(s => s.Name == "Core Switch" && s.IpAddress == "10.0.0.1");
+    }
+
+    [Test]
+    public void AddSwitch_ShouldCallSaveSwitches()
+    {
+        // Arrange
+        var sw = new Switch("Edge Switch", "172.16.0.1");
+
+        // Act
+        _switchService.AddSwitch(sw);
+
+        // Assert
+        _mockConfigurationService.Received(1).SaveSwitches(Arg.Any<IEnumerable<Switch>>());
+    }
+
+    [Test]
+    public void RemoveSwitch_ShouldRemoveSwitchFromCollection()
+    {
+        // Arrange
+        var sw = new Switch("ToRemove", "192.168.1.99");
+        _switchService.AddSwitch(sw);
+
+        // Act
+        _switchService.RemoveSwitch(sw);
+        var switches = _switchService.GetSwitches();
+
+        // Assert
+        switches.ShouldBeEmpty();
+    }
+
+    [Test]
+    public void RemoveSwitch_ShouldCallSaveSwitches()
+    {
+        // Arrange
+        var sw = new Switch("ToRemove", "192.168.1.99");
+        _switchService.AddSwitch(sw);
+        _mockConfigurationService.ClearReceivedCalls();
+
+        // Act
+        _switchService.RemoveSwitch(sw);
+
+        // Assert
+        _mockConfigurationService.Received(1).SaveSwitches(Arg.Any<IEnumerable<Switch>>());
+    }
+
+    [Test]
+    public void MoveUp_ShouldMoveFirstSwitchUp_AndDoNothing()
+    {
+        // Arrange
+        var sw1 = new Switch("Switch 1", "192.168.1.1");
+        var sw2 = new Switch("Switch 2", "192.168.1.2");
+        _switchService.AddSwitch(sw1);
+        _switchService.AddSwitch(sw2);
+        _mockConfigurationService.ClearReceivedCalls();
+
+        // Act
+        _switchService.MoveUp(sw1);
+        var switches = _switchService.GetSwitches();
+
+        // Assert
+        switches[0].ShouldBe(sw1);
+        switches[1].ShouldBe(sw2);
+        _mockConfigurationService.DidNotReceive().SaveSwitches(Arg.Any<IEnumerable<Switch>>());
+    }
+
+    [Test]
+    public void MoveUp_ShouldMoveSecondSwitchToFirstPosition()
+    {
+        // Arrange
+        var sw1 = new Switch("Switch 1", "192.168.1.1");
+        var sw2 = new Switch("Switch 2", "192.168.1.2");
+        _switchService.AddSwitch(sw1);
+        _switchService.AddSwitch(sw2);
+        _mockConfigurationService.ClearReceivedCalls();
+
+        // Act
+        _switchService.MoveUp(sw2);
+        var switches = _switchService.GetSwitches();
+
+        // Assert
+        switches[0].ShouldBe(sw2);
+        switches[1].ShouldBe(sw1);
+        _mockConfigurationService.Received(1).SaveSwitches(Arg.Any<IEnumerable<Switch>>());
+    }
+
+    [Test]
+    public void MoveDown_ShouldMoveLastSwitchDown_AndDoNothing()
+    {
+        // Arrange
+        var sw1 = new Switch("Switch 1", "192.168.1.1");
+        var sw2 = new Switch("Switch 2", "192.168.1.2");
+        _switchService.AddSwitch(sw1);
+        _switchService.AddSwitch(sw2);
+        _mockConfigurationService.ClearReceivedCalls();
+
+        // Act
+        _switchService.MoveDown(sw2);
+        var switches = _switchService.GetSwitches();
+
+        // Assert
+        switches[0].ShouldBe(sw1);
+        switches[1].ShouldBe(sw2);
+        _mockConfigurationService.DidNotReceive().SaveSwitches(Arg.Any<IEnumerable<Switch>>());
+    }
+
+    [Test]
+    public void MoveDown_ShouldMoveFirstSwitchToSecondPosition()
+    {
+        // Arrange
+        var sw1 = new Switch("Switch 1", "192.168.1.1");
+        var sw2 = new Switch("Switch 2", "192.168.1.2");
+        _switchService.AddSwitch(sw1);
+        _switchService.AddSwitch(sw2);
+        _mockConfigurationService.ClearReceivedCalls();
+
+        // Act
+        _switchService.MoveDown(sw1);
+        var switches = _switchService.GetSwitches();
+
+        // Assert
+        switches[0].ShouldBe(sw2);
+        switches[1].ShouldBe(sw1);
+        _mockConfigurationService.Received(1).SaveSwitches(Arg.Any<IEnumerable<Switch>>());
+    }
+}

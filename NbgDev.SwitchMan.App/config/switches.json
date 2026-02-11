@@ -1,0 +1,10 @@
+[
+  {
+    "Name": "Edge Switch",
+    "IpAddress": "192.168.1.20"
+  },
+  {
+    "Name": "Core Switch",
+    "IpAddress": "192.168.1.10"
+  }
+]

@@ -19,6 +19,9 @@ builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
 // Register VLAN service as singleton
 builder.Services.AddSingleton<VlanService>();
 
+// Register Switch service as singleton
+builder.Services.AddSingleton<SwitchService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
