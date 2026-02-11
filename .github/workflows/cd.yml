@@ -34,6 +34,13 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
+      - name: Prepare Docker image name
+        id: docker
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "repository=$REPO_LOWER" >> $GITHUB_OUTPUT
+          echo "Docker repository: $REPO_LOWER"
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -50,7 +57,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.nbgv.outputs.version }}
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ steps.docker.outputs.repository }}:${{ steps.nbgv.outputs.version }}
+            ghcr.io/${{ steps.docker.outputs.repository }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
