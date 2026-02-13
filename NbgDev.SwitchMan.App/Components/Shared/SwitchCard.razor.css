@@ -1,0 +1,61 @@
+/* Mobile-first styles for SwitchCard component */
+
+.switch-card {
+    border-radius: 8px;
+}
+
+.switch-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.switch-card-info {
+    flex: 1;
+}
+
+.switch-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.switch-action-btn {
+    /* Minimum touch target size for mobile: 44x44px (Apple HIG / Material Design) */
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: 1;
+    padding: 10px 16px;
+}
+
+.switch-action-btn .btn-label {
+    display: inline;
+}
+
+/* Desktop styles: optimize for larger screens */
+@media (min-width: 768px) {
+    .switch-card-actions {
+        gap: 12px;
+    }
+
+    .switch-action-btn {
+        flex: 0 1 auto;
+        min-width: auto;
+    }
+
+    .switch-action-btn .btn-label {
+        display: inline;
+    }
+}
+
+/* Extra small screens: stack buttons vertically if needed */
+@media (max-width: 360px) {
+    .switch-action-btn {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+}

@@ -1,0 +1,30 @@
+/* Mobile-first styles for Home page */
+
+/* Ensure adequate padding on mobile */
+.container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Touch-friendly button sizing */
+.btn-lg {
+    min-height: 48px;
+}
+
+/* Full-width button on very small screens */
+@media (max-width: 576px) {
+    .btn-lg {
+        width: 100%;
+    }
+}
+
+/* Improve modal on mobile */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-dialog-centered {
+        min-height: calc(100% - 1rem);
+    }
+}
