@@ -1,24 +1,27 @@
-<div class="card mb-3">
+<div class="card mb-3 switch-card">
     <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start">
-            <div class="flex-grow-1">
-                <h5 class="card-title">@Switch.Name</h5>
+        <div class="switch-card-header">
+            <div class="switch-card-info">
+                <h5 class="card-title mb-1">@Switch.Name</h5>
                 <p class="card-text text-muted mb-0">
                     <span class="bi bi-hdd-network me-1"></span>
                     @Switch.IpAddress
                 </p>
             </div>
-            <div class="btn-group-vertical" role="group">
-                <button class="btn btn-sm btn-outline-secondary" @onclick="OnMoveUp" title="Move Up">
-                    <span class="bi bi-arrow-up"></span>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary" @onclick="OnMoveDown" title="Move Down">
-                    <span class="bi bi-arrow-down"></span>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" @onclick="OnDelete" title="Delete">
-                    <span class="bi bi-trash"></span>
-                </button>
-            </div>
+        </div>
+        <div class="switch-card-actions mt-3">
+            <button class="btn btn-outline-secondary switch-action-btn" @onclick="OnMoveUp" title="Move Up" aria-label="Move Up">
+                <span class="bi bi-arrow-up"></span>
+                <span class="btn-label">Up</span>
+            </button>
+            <button class="btn btn-outline-secondary switch-action-btn" @onclick="OnMoveDown" title="Move Down" aria-label="Move Down">
+                <span class="bi bi-arrow-down"></span>
+                <span class="btn-label">Down</span>
+            </button>
+            <button class="btn btn-outline-danger switch-action-btn" @onclick="OnDelete" title="Delete" aria-label="Delete">
+                <span class="bi bi-trash"></span>
+                <span class="btn-label">Delete</span>
+            </button>
         </div>
     </div>
 </div>

@@ -8,7 +8,8 @@ Switch Man is a web-based application built with .NET 10 Blazor Server that prov
 
 ## Features
 
-- **Web-Based Interface**: Access from any browser
+- **Mobile-First Design**: Optimized for smartphone and tablet use with touch-friendly controls
+- **Web-Based Interface**: Access from any browser on desktop or mobile devices
 - **Simple Home Page**: Landing page with clear app title and access to settings
 - **VLAN Management**: Add, view, and delete VLANs with ease
 - **Input Validation**: Ensures VLAN IDs are within the valid range (1-4094)
@@ -20,7 +21,8 @@ Switch Man is a web-based application built with .NET 10 Blazor Server that prov
 ## Platform Support
 
 - **Cross-Platform**: Runs in Docker on any platform
-- **Web-Based**: Access from any modern web browser
+- **Web-Based**: Access from any modern web browser on desktop, tablet, or smartphone
+- **Mobile-Optimized**: Touch-friendly interface designed for use on mobile devices
 
 ## Requirements
 

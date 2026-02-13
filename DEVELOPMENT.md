@@ -215,6 +215,13 @@ docker rm switchman
 - [ ] Duplicate VLAN IDs are rejected
 - [ ] App handles empty input gracefully
 - [ ] Real-time updates work when multiple browsers connected
+- [ ] **Mobile Testing**:
+  - [ ] UI is usable on smartphone screens (375px - 428px wide)
+  - [ ] All buttons are easily tappable (minimum 44x44px touch targets)
+  - [ ] Text is readable without zooming
+  - [ ] Forms are easy to fill out on mobile
+  - [ ] Modals display correctly on small screens
+  - [ ] No horizontal scrolling on mobile viewports
 
 ## Best Practices
 
@@ -242,6 +249,15 @@ docker rm switchman
    - Use semantic HTML elements
    - Add ARIA labels where needed
    - Ensure keyboard navigation works
+
+6. **Mobile-First Design** (REQUIRED):
+   - **ALWAYS** design UI components for mobile devices first
+   - Ensure all interactive elements meet minimum touch target size (44x44px)
+   - Test on mobile viewports (375px - 428px wide) during development
+   - Use responsive CSS with mobile-first media queries
+   - Avoid horizontal scrolling on mobile devices
+   - Use larger form controls on mobile (form-control-lg)
+   - Ensure text is readable without zooming (minimum 16px font size for body text)
 
 ## Version Control
 
