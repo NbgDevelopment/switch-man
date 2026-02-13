@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NbgDev.SwitchMan.App.Models;
 using NbgDev.SwitchMan.App.Services;
+using NbgDev.SwitchMan.Switches.Contract;
 using Shouldly;
 
 namespace NbgDev.SwitchMan.App.Tests.Services;
@@ -9,6 +11,8 @@ namespace NbgDev.SwitchMan.App.Tests.Services;
 public class SwitchServiceTests
 {
     private IConfigurationService _mockConfigurationService = null!;
+    private ISwitchAccessService _mockSwitchAccessService = null!;
+    private ILogger<SwitchService> _mockLogger = null!;
     private SwitchService _switchService = null!;
 
     [SetUp]
@@ -16,7 +20,11 @@ public class SwitchServiceTests
     {
         _mockConfigurationService = Substitute.For<IConfigurationService>();
         _mockConfigurationService.LoadSwitches().Returns(new List<Switch>());
-        _switchService = new SwitchService(_mockConfigurationService);
+        
+        _mockSwitchAccessService = Substitute.For<ISwitchAccessService>();
+        _mockLogger = Substitute.For<ILogger<SwitchService>>();
+        
+        _switchService = new SwitchService(_mockConfigurationService, _mockSwitchAccessService, _mockLogger);
     }
 
     [Test]
@@ -30,9 +38,11 @@ public class SwitchServiceTests
         };
         var mockConfigService = Substitute.For<IConfigurationService>();
         mockConfigService.LoadSwitches().Returns(existingSwitches);
+        var mockSwitchAccess = Substitute.For<ISwitchAccessService>();
+        var mockLogger = Substitute.For<ILogger<SwitchService>>();
 
         // Act
-        var service = new SwitchService(mockConfigService);
+        var service = new SwitchService(mockConfigService, mockSwitchAccess, mockLogger);
         var switches = service.GetSwitches();
 
         // Assert

@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using Microsoft.Extensions.Logging;
 using NbgDev.SwitchMan.App.Models;
+using NbgDev.SwitchMan.Switches.Contract;
 
 namespace NbgDev.SwitchMan.App.Services;
 
@@ -7,10 +9,17 @@ public class SwitchService
 {
     private readonly ObservableCollection<Switch> _switches = new();
     private readonly IConfigurationService _configurationService;
+    private readonly ISwitchAccessService _switchAccessService;
+    private readonly ILogger<SwitchService> _logger;
 
-    public SwitchService(IConfigurationService configurationService)
+    public SwitchService(
+        IConfigurationService configurationService,
+        ISwitchAccessService switchAccessService,
+        ILogger<SwitchService> logger)
     {
         _configurationService = configurationService;
+        _switchAccessService = switchAccessService;
+        _logger = logger;
         
         // Load existing switches at startup
         var loadedSwitches = _configurationService.LoadSwitches();
@@ -23,6 +32,33 @@ public class SwitchService
     public ObservableCollection<Switch> GetSwitches()
     {
         return _switches;
+    }
+
+    public async Task AddSwitchAsync(Switch sw)
+    {
+        try
+        {
+            _logger.LogInformation("Adding switch {Name} at {IpAddress}", sw.Name, sw.IpAddress);
+            
+            // Retrieve port information from the switch
+            var portCount = await _switchAccessService.GetPortCountAsync(sw.IpAddress);
+            _logger.LogInformation("Switch {Name} has {PortCount} ports", sw.Name, portCount);
+            
+            var portVlans = await _switchAccessService.GetPortVlansAsync(sw.IpAddress);
+            foreach (var portInfo in portVlans)
+            {
+                _logger.LogInformation("Switch {Name} - Port {Port}: VLAN {VlanId}", 
+                    sw.Name, portInfo.PortNumber, portInfo.VlanId);
+            }
+            
+            _switches.Add(sw);
+            _configurationService.SaveSwitches(_switches);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding switch {Name} at {IpAddress}", sw.Name, sw.IpAddress);
+            throw;
+        }
     }
 
     public void AddSwitch(Switch sw)
