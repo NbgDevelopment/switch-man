@@ -11,6 +11,13 @@
     <link rel="stylesheet" href="@Assets["NbgDev.SwitchMan.App.styles.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="A .NET Blazor Server application for managing VLAN configurations on network switches" />
+    <meta name="theme-color" content="#0d6efd" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    
     <HeadOutlet />
 </head>
 
@@ -18,6 +25,7 @@
     <Routes />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="pwa.js"></script>
 </body>
 
 </html>
