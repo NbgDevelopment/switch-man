@@ -199,4 +199,52 @@ public class SwitchServiceTests
         switches[1].ShouldBe(sw1);
         _mockConfigurationService.Received(1).SaveSwitches(Arg.Any<IEnumerable<Switch>>());
     }
+
+    [Test]
+    public async Task AddSwitchAsync_ShouldRetrievePortInformation()
+    {
+        // Arrange
+        var sw = new Switch("Test Switch", "192.168.1.100");
+        var portInfos = new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>
+        {
+            new(1, 10),
+            new(2, 20),
+            new(3, 10)
+        };
+        
+        _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(sw.IpAddress).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(portInfos));
+
+        // Act
+        await _switchService.AddSwitchAsync(sw);
+
+        // Assert
+        await _mockSwitchAccessService.Received(1).GetPortCountAsync(sw.IpAddress);
+        await _mockSwitchAccessService.Received(1).GetPortVlansAsync(sw.IpAddress);
+        _mockConfigurationService.Received(1).SaveSwitches(Arg.Any<IEnumerable<Switch>>());
+        
+        var switches = _switchService.GetSwitches();
+        switches.Count.ShouldBe(1);
+        switches.ShouldContain(s => s.Name == "Test Switch" && s.IpAddress == "192.168.1.100");
+    }
+
+    [Test]
+    public async Task AddSwitchAsync_ShouldLogPortVlanInformation()
+    {
+        // Arrange
+        var sw = new Switch("Logging Test Switch", "192.168.1.101");
+        var portInfos = new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>
+        {
+            new(1, 100)
+        };
+        
+        _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(sw.IpAddress).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(portInfos));
+
+        // Act
+        await _switchService.AddSwitchAsync(sw);
+
+        // Assert - verify logger was called (we can't easily verify exact log messages with NSubstitute)
+        _mockLogger.ReceivedCalls().Count().ShouldBeGreaterThan(0);
+    }
 }

@@ -2,5 +2,6 @@
   <Project Path="NbgDev.SwitchMan.App.Tests/NbgDev.SwitchMan.App.Tests.csproj" />
   <Project Path="NbgDev.SwitchMan.App/NbgDev.SwitchMan.App.csproj" />
   <Project Path="NbgDev.SwitchMan.Switches.Contract/NbgDev.SwitchMan.Switches.Contract.csproj" />
+  <Project Path="NbgDev.SwitchMan.Switches.TLSG108PE.Tests/NbgDev.SwitchMan.Switches.TLSG108PE.Tests.csproj" />
   <Project Path="NbgDev.SwitchMan.Switches.TLSG108PE/NbgDev.SwitchMan.Switches.TLSG108PE.csproj" />
 </Solution>
