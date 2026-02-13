@@ -84,8 +84,8 @@ NbgDev.SwitchMan.Switches.Contract/
 └── ISwitchAccessService # Interface for switch access
     └── Models/          # Port information models
 
-NbgDev.SwitchMan.Switches.TLSG108PE/
-└── Implementation       # SNMP-based implementation for TL-SG108PE switches
+NbgDev.SwitchMan.Switches.TLSG2008/
+└── Implementation       # SNMP-based implementation for TL-SG2008 switches
 ```
 
 ## Usage
@@ -101,7 +101,7 @@ NbgDev.SwitchMan.Switches.TLSG108PE/
 
 ### Switch Configuration Requirements
 
-To enable SNMP access on your TL-SG108PE switch:
+To enable SNMP access on your TL-SG2008 switch:
 
 1. **Enable SNMP on the switch**:
    - Log into the switch's web interface (default: http://192.168.0.1)
@@ -116,7 +116,7 @@ To enable SNMP access on your TL-SG108PE switch:
    - Firewall rules should allow SNMP traffic between Switch Man and the switch
 
 3. **Supported Switches**:
-   - Currently supports TP-Link TL-SG108PE switches
+   - Currently supports TP-Link TL-SG2008 switches
    - Uses SNMP v1 protocol with community string authentication
    - Default community string: "public" (configurable in future versions)
 
@@ -177,7 +177,7 @@ The application creates `vlans.json` and `switches.json` files in the configured
 
 ## Current Limitations
 
-- Only supports TL-SG108PE switches via SNMP v1
+- Only supports TL-SG2008 switches via SNMP v1
 - SNMP community string is hardcoded to "public"
 - No authentication or multi-user support
 - Switch port configuration (changing VLANs) not yet implemented

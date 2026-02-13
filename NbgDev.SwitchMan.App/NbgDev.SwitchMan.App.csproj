@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NbgDev.SwitchMan.Switches.TLSG108PE\NbgDev.SwitchMan.Switches.TLSG108PE.csproj" />
+    <ProjectReference Include="..\NbgDev.SwitchMan.Switches.TLSG2008\NbgDev.SwitchMan.Switches.TLSG2008.csproj" />
   </ItemGroup>
 
 </Project>

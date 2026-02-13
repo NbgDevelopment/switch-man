@@ -3,19 +3,19 @@ using NSubstitute;
 using NbgDev.SwitchMan.Switches.Contract;
 using Shouldly;
 
-namespace NbgDev.SwitchMan.Switches.TLSG108PE.Tests;
+namespace NbgDev.SwitchMan.Switches.TLSG2008.Tests;
 
 [TestFixture]
-public class TlSg108PeSwitchAccessServiceTests
+public class TlSg2008SwitchAccessServiceTests
 {
-    private ILogger<TlSg108PeSwitchAccessService> _mockLogger = null!;
-    private TlSg108PeSwitchAccessService _service = null!;
+    private ILogger<TlSg2008SwitchAccessService> _mockLogger = null!;
+    private TlSg2008SwitchAccessService _service = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _mockLogger = Substitute.For<ILogger<TlSg108PeSwitchAccessService>>();
-        _service = new TlSg108PeSwitchAccessService(_mockLogger);
+        _mockLogger = Substitute.For<ILogger<TlSg2008SwitchAccessService>>();
+        _service = new TlSg2008SwitchAccessService(_mockLogger);
     }
 
     [Test]
@@ -26,7 +26,7 @@ public class TlSg108PeSwitchAccessServiceTests
     }
 
     [Test]
-    public async Task GetPortCountAsync_ShouldReturnEightForTlSg108Pe()
+    public async Task GetPortCountAsync_ShouldReturnEightForTlSg2008()
     {
         // Note: This test will fail if there's no actual switch at the IP address
         // In a real scenario, we would mock the SNMP calls or use a test switch

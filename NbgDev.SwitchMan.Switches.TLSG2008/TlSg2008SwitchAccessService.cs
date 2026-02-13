@@ -5,17 +5,17 @@ using NbgDev.SwitchMan.Switches.Contract;
 using NbgDev.SwitchMan.Switches.Contract.Models;
 using System.Net;
 
-namespace NbgDev.SwitchMan.Switches.TLSG108PE;
+namespace NbgDev.SwitchMan.Switches.TLSG2008;
 
 /// <summary>
-/// Implementation of ISwitchAccessService for TP-Link TL-SG108PE switches
+/// Implementation of ISwitchAccessService for TP-Link TL-SG2008 switches
 /// </summary>
-public class TlSg108PeSwitchAccessService : ISwitchAccessService
+public class TlSg2008SwitchAccessService : ISwitchAccessService
 {
-    private readonly ILogger<TlSg108PeSwitchAccessService> _logger;
+    private readonly ILogger<TlSg2008SwitchAccessService> _logger;
     private readonly string _communityString;
     
-    // SNMP OIDs for TL-SG108PE
+    // SNMP OIDs for TL-SG2008
     // Standard IF-MIB OID for number of interfaces
     private const string IfNumberOid = "1.3.6.1.2.1.2.1.0";
     
@@ -23,10 +23,10 @@ public class TlSg108PeSwitchAccessService : ISwitchAccessService
     // Port VLAN membership: 1.3.6.1.2.1.17.7.1.4.3.1.2
     private const string Dot1qPvid = "1.3.6.1.2.1.17.7.1.4.5.1.1";
     
-    // TL-SG108PE has 8 physical ports
+    // TL-SG2008 has 8 physical ports
     private const int PhysicalPortCount = 8;
 
-    public TlSg108PeSwitchAccessService(ILogger<TlSg108PeSwitchAccessService> logger)
+    public TlSg2008SwitchAccessService(ILogger<TlSg2008SwitchAccessService> logger)
     {
         _logger = logger;
         // Use "public" as default community string
@@ -55,9 +55,9 @@ public class TlSg108PeSwitchAccessService : ISwitchAccessService
                 var interfaceCount = int.Parse(result[0].Data.ToString());
                 _logger.LogInformation("Switch reports {InterfaceCount} total interfaces", interfaceCount);
                 
-                // TL-SG108PE has 8 physical ports, but SNMP might report additional virtual interfaces
+                // TL-SG2008 has 8 physical ports, but SNMP might report additional virtual interfaces
                 // Return the known physical port count for this model
-                _logger.LogInformation("Returning {PhysicalPortCount} physical ports for TL-SG108PE", PhysicalPortCount);
+                _logger.LogInformation("Returning {PhysicalPortCount} physical ports for TL-SG2008", PhysicalPortCount);
                 return PhysicalPortCount;
             }
 
@@ -81,7 +81,7 @@ public class TlSg108PeSwitchAccessService : ISwitchAccessService
             var community = new OctetString(_communityString);
             var portInfoList = new List<PortInfo>();
 
-            // For TL-SG108PE, we query the PVID (Port VLAN ID) for each port
+            // For TL-SG2008, we query the PVID (Port VLAN ID) for each port
             // Ports are typically numbered 1-8
             for (int port = 1; port <= PhysicalPortCount; port++)
             {
