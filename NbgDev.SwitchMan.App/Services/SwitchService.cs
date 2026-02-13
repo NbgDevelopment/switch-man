@@ -61,12 +61,6 @@ public class SwitchService
         }
     }
 
-    public void AddSwitch(Switch sw)
-    {
-        _switches.Add(sw);
-        _configurationService.SaveSwitches(_switches);
-    }
-
     public void RemoveSwitch(Switch sw)
     {
         _switches.Remove(sw);
