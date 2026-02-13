@@ -40,7 +40,7 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - cache-first strategy with network fallback
 self.addEventListener('fetch', event => {
   // Only handle GET requests
   if (event.request.method !== 'GET') {
