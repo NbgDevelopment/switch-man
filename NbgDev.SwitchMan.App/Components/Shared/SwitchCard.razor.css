@@ -46,10 +46,6 @@
         flex: 0 1 auto;
         min-width: auto;
     }
-
-    .switch-action-btn .btn-label {
-        display: inline;
-    }
 }
 
 /* Extra small screens: stack buttons vertically if needed */
