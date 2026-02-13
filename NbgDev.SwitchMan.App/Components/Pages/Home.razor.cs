@@ -30,7 +30,7 @@ public partial class Home
         errorMessage = string.Empty;
     }
 
-    private void AddSwitch()
+    private async Task AddSwitch()
     {
         errorMessage = string.Empty;
 
@@ -52,9 +52,16 @@ public partial class Home
             return;
         }
 
-        var newSwitch = new Switch(switchName, ipAddress);
-        SwitchService.AddSwitch(newSwitch);
-        CloseAddDialog();
+        try
+        {
+            var newSwitch = new Switch(switchName, ipAddress);
+            await SwitchService.AddSwitchAsync(newSwitch);
+            CloseAddDialog();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error adding switch: {ex.Message}";
+        }
     }
 
     private void MoveUp(Switch sw)

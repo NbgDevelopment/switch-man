@@ -12,11 +12,13 @@ Switch Man is a web-based application built with .NET 10 Blazor Server that prov
 - **Web-Based Interface**: Access from any browser on desktop or mobile devices
 - **Simple Home Page**: Landing page with clear app title and access to settings
 - **VLAN Management**: Add, view, and delete VLANs with ease
+- **Switch Management**: Add network switches and retrieve port information via SNMP
 - **Input Validation**: Ensures VLAN IDs are within the valid range (1-4094)
 - **Real-time Updates**: Blazor Server provides real-time UI updates
-- **Delete Functionality**: Simple button-based deletion of VLANs
-- **Persistent Storage**: VLANs are stored in JSON format and persist across restarts
+- **Delete Functionality**: Simple button-based deletion of VLANs and switches
+- **Persistent Storage**: VLANs and switches are stored in JSON format and persist across restarts
 - **Configurable Storage Path**: Storage location can be customized via configuration
+- **SNMP Integration**: Retrieve port count and VLAN assignments from network switches
 
 ## Platform Support
 
@@ -75,10 +77,17 @@ NbgDev.SwitchMan.App/
 β"œβ"€β"€ Components/
 β"‚   β"œβ"€β"€ Layout/          # Layout components (NavMenu, MainLayout)
 β"‚   └── Pages/           # Blazor pages (Home, Settings)
-β"œβ"€β"€ Models/              # Data models (Vlan)
-β"œβ"€β"€ Services/            # Business logic (VlanService, ConfigurationService)
-β"œβ"€β"€ config/              # VLAN configuration storage (JSON files)
+β"œβ"€β"€ Models/              # Data models (Vlan, Switch)
+β"œβ"€β"€ Services/            # Business logic (VlanService, SwitchService, ConfigurationService)
+β"œβ"€β"€ config/              # Configuration storage (JSON files)
 └── Program.cs           # Application entry point
+
+NbgDev.SwitchMan.Switches.Contract/
+└── ISwitchAccessService # Interface for switch access
+    └── Models/          # Port information models
+
+NbgDev.SwitchMan.Switches.TLSG2008/
+└── Implementation       # SNMP-based implementation for TL-SG2008 switches
 ```
 
 ## Usage
@@ -89,10 +98,46 @@ NbgDev.SwitchMan.App/
 4. **Add VLANs** - Enter a VLAN name and ID (1-4094), then click "Add VLAN"
 5. **View VLANs** - All configured VLANs appear in the list on the right
 6. **Delete VLANs** - Click the "Delete" button next to any VLAN
+7. **Add Switches** - Enter switch name and IP address, then click "Add Switch"
+8. **View Switch Information** - Port count and VLAN assignments are retrieved and logged automatically
+
+### Switch Configuration Requirements
+
+To enable SNMP access on your TL-SG2008 switch:
+
+1. **Enable SNMP on the switch**:
+   - Log into the switch's web interface (default: http://192.168.0.1)
+   - Navigate to **System Tools** > **SNMP Config**
+   - Set **SNMP** to **Enable**
+   - Configure the **SNMP Community String** (default is "public")
+   - Click **Apply** to save settings
+
+2. **Network Requirements**:
+   - Ensure the switch is accessible from the host running Switch Man
+   - The switch must respond to SNMP requests on UDP port 161
+   - Firewall rules should allow SNMP traffic between Switch Man and the switch
+
+3. **Supported Switches**:
+   - Currently supports TP-Link TL-SG2008 switches
+   - Uses SNMP v1 protocol with community string authentication
+   - Default community string: "public" (configurable in future versions)
+
+4. **Troubleshooting**:
+   - If you receive timeout errors when adding a switch:
+     - Verify SNMP is enabled on the switch
+     - Check the community string matches (default: "public")
+     - Ensure network connectivity between Switch Man and the switch
+     - Verify no firewall is blocking UDP port 161
+     - Test SNMP access using tools like `snmpwalk` (Linux/Mac) or SNMP Tester (Windows)
+
+**Example SNMP test command** (Linux/Mac):
+```bash
+snmpwalk -v1 -c public <switch-ip-address> system
+```
 
 ### Configuration
 
-The application stores VLAN configurations in JSON format. By default, configurations are stored in the `config` directory within the application folder.
+The application stores VLAN and switch configurations in JSON format. By default, configurations are stored in the `config` directory within the application folder.
 
 **Environment Variables:**
 
@@ -102,8 +147,9 @@ The application stores VLAN configurations in JSON format. By default, configura
 
 **Configuration File:**
 
-The application creates a `vlans.json` file in the configured directory with the following structure:
+The application creates `vlans.json` and `switches.json` files in the configured directory:
 
+**vlans.json:**
 ```json
 [
   {
@@ -117,15 +163,35 @@ The application creates a `vlans.json` file in the configured directory with the
 ]
 ```
 
+**switches.json:**
+```json
+[
+  {
+    "Name": "Main Switch",
+    "IpAddress": "192.168.1.10"
+  },
+  {
+    "Name": "Access Switch",
+    "IpAddress": "192.168.1.20"
+  }
+]
+```
+
 ## Current Limitations
 
-- No network switch integration yet
+- Only supports TL-SG2008 switches via SNMP v1
+- SNMP community string is hardcoded to "public"
 - No authentication or multi-user support
+- Switch port configuration (changing VLANs) not yet implemented
 
 ## Future Enhancements
 
-- Network switch communication (SNMP, SSH)
-- Port-to-VLAN mapping
+- Configurable SNMP community strings
+- Support for additional switch models
+- Switch port configuration (assign VLANs to ports)
+- SNMP v2c and v3 support
+- SSH-based switch management
+- Port-to-VLAN mapping interface
 - Switch discovery and selection
 - Import/export configurations
 - Multi-switch management

@@ -1,5 +1,6 @@
 using NbgDev.SwitchMan.App.Components;
 using NbgDev.SwitchMan.App.Services;
+using NbgDev.SwitchMan.Switches.TLSG2008;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,9 @@ builder.Services.AddSingleton<VlanService>();
 
 // Register Switch service as singleton
 builder.Services.AddSingleton<SwitchService>();
+
+// Register switch access service
+builder.Services.AddTlSg2008SwitchAccess();
 
 var app = builder.Build();
 
