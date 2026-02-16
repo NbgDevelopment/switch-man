@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NbgDev.SwitchMan.Switches.Contract;
 using NbgDev.SwitchMan.Switches.Contract.Models;
 using System.Net.Http.Json;
@@ -20,15 +21,16 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
 
     public OmadaControllerSwitchAccessService(
         ILogger<OmadaControllerSwitchAccessService> logger,
-        HttpClient httpClient)
+        HttpClient httpClient,
+        IOptions<OmadaControllerOptions> options)
     {
         _logger = logger;
         _httpClient = httpClient;
         
-        // In production, these should come from configuration
-        _controllerUrl = "https://localhost:8043";
-        _username = "admin";
-        _password = "admin";
+        var controllerOptions = options.Value;
+        _controllerUrl = controllerOptions.ControllerUrl;
+        _username = controllerOptions.Username;
+        _password = controllerOptions.Password;
     }
 
     public async Task<int> GetPortCountAsync(string ipAddress)

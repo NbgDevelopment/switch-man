@@ -145,20 +145,28 @@ To use switch access via Omada Controller:
 1. **Controller Setup**:
    - Ensure your TP-Link Omada Controller is running and accessible
    - The controller can be software-based (running on a server) or a hardware controller
-   - Default controller URL: `https://localhost:8043` (configurable in future versions)
    - Ensure switches are adopted and managed by the controller
 
-2. **Authentication**:
-   - Username and password are required (default: admin/admin)
-   - In production, these should come from secure configuration
-   - The implementation handles authentication automatically
+2. **Configuration via Environment Variables**:
+   - `OmadaController__ControllerUrl` - Controller URL (default: `https://localhost:8043`)
+   - `OmadaController__Username` - Controller username (default: `admin`)
+   - `OmadaController__Password` - Controller password (default: `admin`)
 
-3. **Network Requirements**:
+3. **Example Docker Configuration**:
+   ```bash
+   docker run -d -p 8080:8080 \
+     -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
+     -e OmadaController__Username=myadmin \
+     -e OmadaController__Password=mypassword \
+     --name switchman switchman:latest
+   ```
+
+4. **Network Requirements**:
    - Controller must be accessible via HTTPS
    - Firewall rules should allow HTTPS traffic to the controller
    - Controller API must be enabled
 
-4. **Advantages over Direct SNMP**:
+5. **Advantages over Direct SNMP**:
    - Centralized management of multiple switches
    - No need to configure SNMP on each switch individually
    - Access to additional management features
@@ -170,9 +178,19 @@ The application stores VLAN and switch configurations in JSON format. By default
 
 **Environment Variables:**
 
+Application Configuration:
 - `SwitchMan__ConfigPath`: Override the default configuration directory path
   - Default: `config` (relative to application directory)
   - Example: `/data/config` for a custom absolute path
+
+Omada Controller Configuration (when using Omada Controller access):
+- `OmadaController__ControllerUrl`: Controller URL
+  - Default: `https://localhost:8043`
+  - Example: `https://192.168.1.100:8043`
+- `OmadaController__Username`: Controller username
+  - Default: `admin`
+- `OmadaController__Password`: Controller password
+  - Default: `admin`
 
 **Configuration File:**
 
@@ -211,7 +229,7 @@ The application creates `vlans.json` and `switches.json` files in the configured
 - Supports TL-SG2008 switches via SNMP v1 (direct access)
 - Supports switches managed by TP-Link Omada Controller (API access)
 - SNMP community string is hardcoded to "public"
-- Omada Controller credentials are hardcoded (default: admin/admin)
+- Omada Controller credentials can be configured via environment variables
 - No authentication or multi-user support in the application
 - Switch port configuration (changing VLANs) not yet implemented
 - Only one switch access method can be active at a time (configured at startup)

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using NbgDev.SwitchMan.Switches.Contract;
 using Shouldly;
@@ -10,6 +11,7 @@ public class OmadaControllerSwitchAccessServiceTests
 {
     private ILogger<OmadaControllerSwitchAccessService> _mockLogger = null!;
     private HttpClient _httpClient = null!;
+    private IOptions<OmadaControllerOptions> _options = null!;
     private OmadaControllerSwitchAccessService _service = null!;
 
     [SetUp]
@@ -17,7 +19,13 @@ public class OmadaControllerSwitchAccessServiceTests
     {
         _mockLogger = Substitute.For<ILogger<OmadaControllerSwitchAccessService>>();
         _httpClient = new HttpClient();
-        _service = new OmadaControllerSwitchAccessService(_mockLogger, _httpClient);
+        _options = Options.Create(new OmadaControllerOptions
+        {
+            ControllerUrl = "https://localhost:8043",
+            Username = "admin",
+            Password = "admin"
+        });
+        _service = new OmadaControllerSwitchAccessService(_mockLogger, _httpClient, _options);
     }
 
     [TearDown]
@@ -31,6 +39,24 @@ public class OmadaControllerSwitchAccessServiceTests
     {
         // Assert
         _service.ShouldNotBeNull();
+    }
+    
+    [Test]
+    public void Constructor_ShouldUseOptionsFromConfiguration()
+    {
+        // Arrange
+        var customOptions = Options.Create(new OmadaControllerOptions
+        {
+            ControllerUrl = "https://custom.example.com:8043",
+            Username = "testuser",
+            Password = "testpass"
+        });
+        
+        // Act
+        var service = new OmadaControllerSwitchAccessService(_mockLogger, _httpClient, customOptions);
+        
+        // Assert
+        service.ShouldNotBeNull();
     }
 
     [Test]
