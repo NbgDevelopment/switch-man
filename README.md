@@ -86,6 +86,9 @@ NbgDev.SwitchMan.Switches.Contract/
 
 NbgDev.SwitchMan.Switches.TLSG2008/
 └── Implementation       # SNMP-based implementation for TL-SG2008 switches
+
+NbgDev.SwitchMan.Switches.OmadaController/
+└── Implementation       # API-based implementation for TP-Link Omada Controller
 ```
 
 ## Usage
@@ -116,8 +119,10 @@ To enable SNMP access on your TL-SG2008 switch:
    - Firewall rules should allow SNMP traffic between Switch Man and the switch
 
 3. **Supported Switches**:
-   - Currently supports TP-Link TL-SG2008 switches
-   - Uses SNMP v1 protocol with community string authentication
+   - **Direct SNMP Access**: Currently supports TP-Link TL-SG2008 switches
+   - **Omada Controller Access**: Supports any switch managed by TP-Link Omada Controller (software or hardware controller)
+   - Uses SNMP v1 protocol with community string authentication for direct access
+   - Uses HTTPS API for Omada Controller access
    - Default community string: "public" (configurable in future versions)
 
 4. **Troubleshooting**:
@@ -132,6 +137,32 @@ To enable SNMP access on your TL-SG2008 switch:
 ```bash
 snmpwalk -v1 -c public <switch-ip-address> system
 ```
+
+### Omada Controller Configuration
+
+To use switch access via Omada Controller:
+
+1. **Controller Setup**:
+   - Ensure your TP-Link Omada Controller is running and accessible
+   - The controller can be software-based (running on a server) or a hardware controller
+   - Default controller URL: `https://localhost:8043` (configurable in future versions)
+   - Ensure switches are adopted and managed by the controller
+
+2. **Authentication**:
+   - Username and password are required (default: admin/admin)
+   - In production, these should come from secure configuration
+   - The implementation handles authentication automatically
+
+3. **Network Requirements**:
+   - Controller must be accessible via HTTPS
+   - Firewall rules should allow HTTPS traffic to the controller
+   - Controller API must be enabled
+
+4. **Advantages over Direct SNMP**:
+   - Centralized management of multiple switches
+   - No need to configure SNMP on each switch individually
+   - Access to additional management features
+   - Works with any switch model supported by Omada Controller
 
 ### Configuration
 
@@ -177,22 +208,27 @@ The application creates `vlans.json` and `switches.json` files in the configured
 
 ## Current Limitations
 
-- Only supports TL-SG2008 switches via SNMP v1
+- Supports TL-SG2008 switches via SNMP v1 (direct access)
+- Supports switches managed by TP-Link Omada Controller (API access)
 - SNMP community string is hardcoded to "public"
-- No authentication or multi-user support
+- Omada Controller credentials are hardcoded (default: admin/admin)
+- No authentication or multi-user support in the application
 - Switch port configuration (changing VLANs) not yet implemented
+- Only one switch access method can be active at a time (configured at startup)
 
 ## Future Enhancements
 
-- Configurable SNMP community strings
-- Support for additional switch models
-- Switch port configuration (assign VLANs to ports)
+- Configurable SNMP community strings and Omada Controller credentials
+- Runtime selection of switch access method (SNMP vs Omada Controller)
+- Support for additional switch models via SNMP
+- Support for multiple Omada Controller instances
 - SNMP v2c and v3 support
 - SSH-based switch management
+- Switch port configuration (assign VLANs to ports)
 - Port-to-VLAN mapping interface
-- Switch discovery and selection
+- Switch discovery and auto-detection
 - Import/export configurations
-- Multi-switch management
+- Multi-switch management dashboard
 - User authentication and authorization
 - Database backend (SQLite, SQL Server, or MongoDB)
 
