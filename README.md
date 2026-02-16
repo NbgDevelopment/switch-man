@@ -142,35 +142,42 @@ snmpwalk -v1 -c public <switch-ip-address> system
 
 To use switch access via Omada Controller:
 
-1. **Controller Setup**:
+1. **User Account Setup** (Recommended):
+   - Create a dedicated user account with minimal required permissions
+   - See [Omada User Setup Guide](./OMADA_USER_SETUP.md) for detailed instructions
+   - **Security Best Practice**: Don't use the default admin account for API access
+
+2. **Controller Setup**:
    - Ensure your TP-Link Omada Controller is running and accessible
    - The controller can be software-based (running on a server) or a hardware controller
    - Ensure switches are adopted and managed by the controller
 
-2. **Configuration via Environment Variables**:
+3. **Configuration via Environment Variables**:
    - `OmadaController__ControllerUrl` - Controller URL (default: `https://localhost:8043`)
    - `OmadaController__Username` - Controller username (default: `admin`)
    - `OmadaController__Password` - Controller password (default: `admin`)
 
-3. **Example Docker Configuration**:
+4. **Example Docker Configuration**:
    ```bash
    docker run -d -p 8080:8080 \
      -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
-     -e OmadaController__Username=myadmin \
-     -e OmadaController__Password=mypassword \
+     -e OmadaController__Username=switchman-api \
+     -e OmadaController__Password=your-secure-password \
      --name switchman switchman:latest
    ```
 
-4. **Network Requirements**:
+5. **Network Requirements**:
    - Controller must be accessible via HTTPS
    - Firewall rules should allow HTTPS traffic to the controller
    - Controller API must be enabled
 
-5. **Advantages over Direct SNMP**:
+6. **Advantages over Direct SNMP**:
    - Centralized management of multiple switches
    - No need to configure SNMP on each switch individually
    - Access to additional management features
    - Works with any switch model supported by Omada Controller
+
+**For detailed user setup and permissions**: See [OMADA_USER_SETUP.md](./OMADA_USER_SETUP.md)
 
 ### Configuration
 
