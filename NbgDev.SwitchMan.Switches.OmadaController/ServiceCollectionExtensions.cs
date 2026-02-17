@@ -21,8 +21,7 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         // Configure options from configuration
-        services.Configure<OmadaControllerOptions>(
-            configuration.GetSection("OmadaController"));
+        services.Configure<OmadaControllerOptions>(configuration);
         
         // Validate options on startup
         services.AddOptions<OmadaControllerOptions>()
