@@ -21,12 +21,17 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         // Configure options from configuration
-        services.Configure<OmadaControllerOptions>(configuration);
+        services.Configure<OmadaControllerOptions>(
+            configuration.GetSection("OmadaController"));
         
         // Validate options on startup
         services.AddOptions<OmadaControllerOptions>()
             .ValidateDataAnnotations()
             .ValidateOnStart();
+        
+        // Build a temporary service provider to get the options for HttpClient configuration
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptions<OmadaControllerOptions>>().Value;
         
         // Register HttpClient for the Omada Controller service
         services.AddHttpClient<OmadaControllerSwitchAccessService>(client =>
@@ -36,9 +41,10 @@ public static class ServiceCollectionExtensions
         })
         .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
         {
-            // For development/testing, allow self-signed certificates
-            // In production, this should be properly configured
-            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            // Only bypass certificate validation if explicitly configured
+            ServerCertificateCustomValidationCallback = options.AllowInvalidCertificate
+                ? (message, cert, chain, errors) => true
+                : null
         });
         
         // Register the service as ISwitchAccessService

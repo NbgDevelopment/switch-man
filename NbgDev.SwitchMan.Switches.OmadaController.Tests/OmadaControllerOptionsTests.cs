@@ -88,4 +88,53 @@ public class OmadaControllerOptionsTests
         value.Username.ShouldBe("admin"); // Default
         value.Password.ShouldBe("admin"); // Default
     }
+    
+    [Test]
+    public void Options_AllowInvalidCertificate_ShouldDefaultToFalse()
+    {
+        // Arrange - Empty configuration
+        var configuration = new ConfigurationBuilder().Build();
+        
+        var services = new ServiceCollection();
+        services.Configure<OmadaControllerOptions>(
+            configuration.GetSection("OmadaController"));
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Act
+        var options = serviceProvider.GetRequiredService<IOptions<OmadaControllerOptions>>();
+        var value = options.Value;
+
+        // Assert - Should default to false (secure by default)
+        value.ShouldNotBeNull();
+        value.AllowInvalidCertificate.ShouldBeFalse();
+    }
+    
+    [Test]
+    public void Options_AllowInvalidCertificate_ShouldBindFromConfiguration()
+    {
+        // Arrange - Configure to allow invalid certificates
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            {"OmadaController:ControllerUrl", "https://test.example.com:8043"},
+            {"OmadaController:Username", "testuser"},
+            {"OmadaController:Password", "testpassword"},
+            {"OmadaController:AllowInvalidCertificate", "true"}
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+        
+        var services = new ServiceCollection();
+        services.Configure<OmadaControllerOptions>(
+            configuration.GetSection("OmadaController"));
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Act
+        var options = serviceProvider.GetRequiredService<IOptions<OmadaControllerOptions>>();
+        var value = options.Value;
+
+        // Assert
+        value.ShouldNotBeNull();
+        value.AllowInvalidCertificate.ShouldBeTrue();
+    }
 }

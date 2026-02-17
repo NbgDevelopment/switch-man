@@ -25,4 +25,11 @@ public class OmadaControllerOptions
     /// </summary>
     [Required]
     public string Password { get; set; } = "admin";
+
+    /// <summary>
+    /// Whether to allow invalid SSL certificates (e.g., self-signed certificates).
+    /// Set to true for development/testing with self-signed certificates.
+    /// WARNING: Setting this to true in production environments is a security risk.
+    /// </summary>
+    public bool AllowInvalidCertificate { get; set; } = false;
 }

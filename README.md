@@ -159,10 +159,19 @@ To use switch access via Omada Controller:
 
 4. **Example Docker Configuration**:
    ```bash
+   # With valid SSL certificate (default)
    docker run -d -p 8080:8080 \
      -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
      -e OmadaController__Username=switchman-api \
      -e OmadaController__Password=your-secure-password \
+     --name switchman switchman:latest
+   
+   # With self-signed certificate (development/testing only)
+   docker run -d -p 8080:8080 \
+     -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
+     -e OmadaController__Username=switchman-api \
+     -e OmadaController__Password=your-secure-password \
+     -e OmadaController__AllowInvalidCertificate=true \
      --name switchman switchman:latest
    ```
 
@@ -198,6 +207,10 @@ Omada Controller Configuration (when using Omada Controller access):
   - Default: `admin`
 - `OmadaController__Password`: Controller password
   - Default: `admin`
+- `OmadaController__AllowInvalidCertificate`: Allow self-signed/invalid SSL certificates
+  - Default: `false` (secure by default)
+  - Set to `true` to bypass SSL certificate validation for self-signed certificates
+  - **WARNING**: Only use this in development/testing environments. Setting this to `true` in production is a security risk.
 
 **Configuration File:**
 

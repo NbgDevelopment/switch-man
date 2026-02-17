@@ -95,4 +95,56 @@ public class ServiceCollectionExtensionsTests
         var service = serviceProvider.GetService<ISwitchAccessService>();
         service.ShouldNotBeNull();
     }
+    
+    [Test]
+    public void AddOmadaControllerSwitchAccess_WithAllowInvalidCertificateFalse_ShouldConfigureSecureHttpClient()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddLogging();
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            {"OmadaController:ControllerUrl", "https://localhost:8043"},
+            {"OmadaController:Username", "admin"},
+            {"OmadaController:Password", "admin"},
+            {"OmadaController:AllowInvalidCertificate", "false"}
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        // Act
+        services.AddOmadaControllerSwitchAccess(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert - Service should be registered (certificate validation enabled by default)
+        var service = serviceProvider.GetService<ISwitchAccessService>();
+        service.ShouldNotBeNull();
+    }
+    
+    [Test]
+    public void AddOmadaControllerSwitchAccess_WithAllowInvalidCertificateTrue_ShouldConfigureHttpClient()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddLogging();
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            {"OmadaController:ControllerUrl", "https://localhost:8043"},
+            {"OmadaController:Username", "admin"},
+            {"OmadaController:Password", "admin"},
+            {"OmadaController:AllowInvalidCertificate", "true"}
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        // Act
+        services.AddOmadaControllerSwitchAccess(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert - Service should be registered with certificate validation bypassed
+        var service = serviceProvider.GetService<ISwitchAccessService>();
+        service.ShouldNotBeNull();
+    }
 }

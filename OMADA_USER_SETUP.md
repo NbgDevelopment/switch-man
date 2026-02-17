@@ -217,7 +217,48 @@ kubectl create secret generic switchman-omada-creds \
 2. Check firewall rules allow HTTPS traffic on port 8043
 3. Confirm the Omada Controller service is running
 4. Test connectivity: `curl -k https://192.168.1.100:8043/api/info`
-5. Check SSL certificate validity (use `-k` flag with curl to bypass in testing)
+5. **SSL Certificate Issues**: If using self-signed certificates, see below
+
+### SSL Certificate Issues
+
+**Problem**: SSL certificate validation errors or untrusted certificate warnings
+
+**Solutions**:
+
+For **production environments** (recommended):
+1. Install a valid SSL certificate on the Omada Controller
+2. Use a certificate from a trusted Certificate Authority (CA)
+3. Configure proper DNS and certificate subject names
+
+For **development/testing environments** (use with caution):
+1. Set `OmadaController__AllowInvalidCertificate=true` to bypass certificate validation
+2. Example Docker command:
+   ```bash
+   docker run -d -p 8080:8080 \
+     -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
+     -e OmadaController__Username=switchman-api \
+     -e OmadaController__Password=your-password \
+     -e OmadaController__AllowInvalidCertificate=true \
+     --name switchman switchman:latest
+   ```
+3. Example appsettings.json:
+   ```json
+   {
+     "OmadaController": {
+       "ControllerUrl": "https://192.168.1.100:8043",
+       "Username": "switchman-api",
+       "Password": "your-password",
+       "AllowInvalidCertificate": true
+     }
+   }
+   ```
+
+**WARNING**: Disabling certificate validation (`AllowInvalidCertificate=true`) should only be used in:
+- Development environments
+- Testing environments
+- Private networks where security is managed at the network level
+
+Never use this setting in production without understanding the security implications. This makes your connection vulnerable to man-in-the-middle attacks.
 
 ### Token Expiration
 
