@@ -29,22 +29,24 @@ public static class ServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
         
-        // Build a temporary service provider to get the options for HttpClient configuration
-        var serviceProvider = services.BuildServiceProvider();
-        var options = serviceProvider.GetRequiredService<IOptions<OmadaControllerOptions>>().Value;
-        
         // Register HttpClient for the Omada Controller service
         services.AddHttpClient<OmadaControllerSwitchAccessService>(client =>
         {
             // Configure default timeout and other settings
             client.Timeout = TimeSpan.FromSeconds(30);
         })
-        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        .ConfigurePrimaryHttpMessageHandler(serviceProvider =>
         {
-            // Only bypass certificate validation if explicitly configured
-            ServerCertificateCustomValidationCallback = options.AllowInvalidCertificate
-                ? (message, cert, chain, errors) => true
-                : null
+            // Resolve options from the service provider when the HttpClient is created
+            var options = serviceProvider.GetRequiredService<IOptions<OmadaControllerOptions>>().Value;
+            
+            return new HttpClientHandler
+            {
+                // Only bypass certificate validation if explicitly configured
+                ServerCertificateCustomValidationCallback = options.AllowInvalidCertificate
+                    ? (message, cert, chain, errors) => true
+                    : null
+            };
         });
         
         // Register the service as ISwitchAccessService
