@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace NbgDev.SwitchMan.Switches.OmadaController;
 
 /// <summary>
-/// Configuration options for TP-Link Omada Controller access
+/// Configuration options for TP-Link Omada Controller OpenAPI access
 /// </summary>
 public class OmadaControllerOptions
 {
@@ -15,16 +15,18 @@ public class OmadaControllerOptions
     public string ControllerUrl { get; set; } = "https://localhost:8043";
 
     /// <summary>
-    /// Username for authenticating with the Omada Controller
+    /// Client ID for OAuth 2.0 authentication with Omada Controller OpenAPI.
+    /// Get this from Settings > Platform Integration > Open API in the Omada Controller.
     /// </summary>
     [Required]
-    public string Username { get; set; } = "admin";
+    public string ClientId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Password for authenticating with the Omada Controller
+    /// Client Secret for OAuth 2.0 authentication with Omada Controller OpenAPI.
+    /// Get this from Settings > Platform Integration > Open API in the Omada Controller.
     /// </summary>
     [Required]
-    public string Password { get; set; } = "admin";
+    public string ClientSecret { get; set; } = string.Empty;
 
     /// <summary>
     /// Whether to allow invalid SSL certificates (e.g., self-signed certificates).

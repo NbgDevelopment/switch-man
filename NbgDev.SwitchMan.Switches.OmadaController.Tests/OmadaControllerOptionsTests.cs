@@ -15,8 +15,8 @@ public class OmadaControllerOptionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://test.example.com:8043"},
-            {"OmadaController:Username", "testuser"},
-            {"OmadaController:Password", "testpassword"}
+            {"OmadaController:ClientId", "test-client-id"},
+            {"OmadaController:ClientSecret", "test-client-secret"}
         };
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
@@ -34,8 +34,8 @@ public class OmadaControllerOptionsTests
         // Assert
         value.ShouldNotBeNull();
         value.ControllerUrl.ShouldBe("https://test.example.com:8043");
-        value.Username.ShouldBe("testuser");
-        value.Password.ShouldBe("testpassword");
+        value.ClientId.ShouldBe("test-client-id");
+        value.ClientSecret.ShouldBe("test-client-secret");
     }
     
     [Test]
@@ -56,8 +56,8 @@ public class OmadaControllerOptionsTests
         // Assert - Should use default values
         value.ShouldNotBeNull();
         value.ControllerUrl.ShouldBe("https://localhost:8043");
-        value.Username.ShouldBe("admin");
-        value.Password.ShouldBe("admin");
+        value.ClientId.ShouldBe(string.Empty);
+        value.ClientSecret.ShouldBe(string.Empty);
     }
     
     [Test]
@@ -67,7 +67,7 @@ public class OmadaControllerOptionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://custom.example.com:8043"}
-            // Username and Password will use defaults
+            // ClientId and ClientSecret will use defaults
         };
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
@@ -85,8 +85,8 @@ public class OmadaControllerOptionsTests
         // Assert
         value.ShouldNotBeNull();
         value.ControllerUrl.ShouldBe("https://custom.example.com:8043");
-        value.Username.ShouldBe("admin"); // Default
-        value.Password.ShouldBe("admin"); // Default
+        value.ClientId.ShouldBe(string.Empty); // Default
+        value.ClientSecret.ShouldBe(string.Empty); // Default
     }
     
     [Test]
@@ -116,8 +116,8 @@ public class OmadaControllerOptionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://test.example.com:8043"},
-            {"OmadaController:Username", "testuser"},
-            {"OmadaController:Password", "testpassword"},
+            {"OmadaController:ClientId", "test-client-id"},
+            {"OmadaController:ClientSecret", "test-client-secret"},
             {"OmadaController:AllowInvalidCertificate", "true"}
         };
         var configuration = new ConfigurationBuilder()

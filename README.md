@@ -154,23 +154,23 @@ To use switch access via Omada Controller:
 
 3. **Configuration via Environment Variables**:
    - `OmadaController__ControllerUrl` - Controller URL (default: `https://localhost:8043`)
-   - `OmadaController__Username` - Controller username (default: `admin`)
-   - `OmadaController__Password` - Controller password (default: `admin`)
+   - `OmadaController__ClientId` - OAuth 2.0 Client ID from OpenAPI app (required)
+   - `OmadaController__ClientSecret` - OAuth 2.0 Client Secret from OpenAPI app (required)
 
 4. **Example Docker Configuration**:
    ```bash
    # With valid SSL certificate (default)
    docker run -d -p 8080:8080 \
      -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
-     -e OmadaController__Username=switchman-api \
-     -e OmadaController__Password=your-secure-password \
+     -e OmadaController__ClientId=your-client-id \
+     -e OmadaController__ClientSecret=your-client-secret \
      --name switchman switchman:latest
    
    # With self-signed certificate (development/testing only)
    docker run -d -p 8080:8080 \
      -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
-     -e OmadaController__Username=switchman-api \
-     -e OmadaController__Password=your-secure-password \
+     -e OmadaController__ClientId=your-client-id \
+     -e OmadaController__ClientSecret=your-client-secret \
      -e OmadaController__AllowInvalidCertificate=true \
      --name switchman switchman:latest
    ```
@@ -203,10 +203,12 @@ Omada Controller Configuration (when using Omada Controller access):
 - `OmadaController__ControllerUrl`: Controller URL
   - Default: `https://localhost:8043`
   - Example: `https://192.168.1.100:8043`
-- `OmadaController__Username`: Controller username
-  - Default: `admin`
-- `OmadaController__Password`: Controller password
-  - Default: `admin`
+- `OmadaController__ClientId`: OAuth 2.0 Client ID from OpenAPI app
+  - Required: Must be obtained from Omada Controller (Settings > Platform Integration > Open API)
+  - Example: `your-client-id-here`
+- `OmadaController__ClientSecret`: OAuth 2.0 Client Secret from OpenAPI app
+  - Required: Must be obtained from Omada Controller (Settings > Platform Integration > Open API)
+  - Example: `your-client-secret-here`
 - `OmadaController__AllowInvalidCertificate`: Allow self-signed/invalid SSL certificates
   - Default: `false` (secure by default)
   - Set to `true` to bypass SSL certificate validation for self-signed certificates

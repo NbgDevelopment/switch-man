@@ -8,16 +8,17 @@ using System.Text.Json;
 namespace NbgDev.SwitchMan.Switches.OmadaController;
 
 /// <summary>
-/// Implementation of ISwitchAccessService for TP-Link Omada Controller
+/// Implementation of ISwitchAccessService for TP-Link Omada Controller OpenAPI
 /// </summary>
 public class OmadaControllerSwitchAccessService : ISwitchAccessService
 {
     private readonly ILogger<OmadaControllerSwitchAccessService> _logger;
     private readonly HttpClient _httpClient;
     private readonly string _controllerUrl;
-    private readonly string _username;
-    private readonly string _password;
-    private string? _token;
+    private readonly string _clientId;
+    private readonly string _clientSecret;
+    private string? _accessToken;
+    private DateTime _tokenExpiration = DateTime.MinValue;
 
     public OmadaControllerSwitchAccessService(
         ILogger<OmadaControllerSwitchAccessService> logger,
@@ -29,8 +30,8 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
         
         var controllerOptions = options.Value;
         _controllerUrl = controllerOptions.ControllerUrl;
-        _username = controllerOptions.Username;
-        _password = controllerOptions.Password;
+        _clientId = controllerOptions.ClientId;
+        _clientSecret = controllerOptions.ClientSecret;
     }
 
     public async Task<int> GetPortCountAsync(string ipAddress)
@@ -122,35 +123,56 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
 
     private async Task EnsureAuthenticatedAsync()
     {
-        if (!string.IsNullOrEmpty(_token))
+        // Check if we have a valid token
+        if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _tokenExpiration)
         {
-            return; // Already authenticated
+            return; // Token is still valid
         }
 
         try
         {
-            _logger.LogInformation("Authenticating with Omada Controller at {Url}", _controllerUrl);
+            _logger.LogInformation("Authenticating with Omada Controller at {Url} using OAuth 2.0", _controllerUrl);
             
-            var loginRequest = new
+            // OAuth 2.0 client credentials grant
+            var tokenRequest = new
             {
-                username = _username,
-                password = _password
+                grant_type = "client_credentials",
+                client_id = _clientId,
+                client_secret = _clientSecret
             };
             
-            var response = await _httpClient.PostAsJsonAsync($"{_controllerUrl}/api/v2/login", loginRequest);
+            var response = await _httpClient.PostAsJsonAsync($"{_controllerUrl}/openapi/authorize/token", tokenRequest);
             response.EnsureSuccessStatusCode();
             
             var result = await response.Content.ReadFromJsonAsync<JsonElement>();
-            if (result.TryGetProperty("result", out var resultElement) &&
-                resultElement.TryGetProperty("token", out var tokenElement))
+            
+            // Parse OAuth 2.0 token response
+            if (result.TryGetProperty("access_token", out var accessTokenElement))
             {
-                _token = tokenElement.GetString();
-                _logger.LogInformation("Successfully authenticated with Omada Controller");
+                _accessToken = accessTokenElement.GetString();
+                
+                // Get token expiration (default to 2 hours if not provided)
+                var expiresIn = 7200; // Default: 2 hours
+                if (result.TryGetProperty("expires_in", out var expiresInElement))
+                {
+                    expiresIn = expiresInElement.GetInt32();
+                }
+                
+                // Set expiration with a 60-second buffer to refresh before actual expiration
+                _tokenExpiration = DateTime.UtcNow.AddSeconds(expiresIn - 60);
+                
+                _logger.LogInformation("Successfully authenticated with Omada Controller. Token expires in {ExpiresIn} seconds", expiresIn);
             }
             else
             {
-                throw new InvalidOperationException("Failed to obtain authentication token from Omada Controller");
+                _logger.LogError("Token response: {Response}", result.ToString());
+                throw new InvalidOperationException("Failed to obtain access token from Omada Controller. Response did not contain 'access_token' field.");
             }
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error during authentication with Omada Controller. Check ClientId and ClientSecret.");
+            throw new InvalidOperationException("Failed to authenticate with Omada Controller. Verify ClientId and ClientSecret are correct.", ex);
         }
         catch (Exception ex)
         {
@@ -163,22 +185,23 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
     {
         try
         {
-            // Query Omada Controller API for switch information
-            // Note: The actual API endpoint and structure depends on the Omada Controller version
-            // This is a simplified implementation
+            // Query Omada Controller OpenAPI for switch information
+            // Using OpenAPI v1 endpoint
             
             var request = new HttpRequestMessage(HttpMethod.Get, 
-                $"{_controllerUrl}/api/v2/sites/default/switches?ip={ipAddress}");
+                $"{_controllerUrl}/openapi/v1/sites/default/switches?ip={ipAddress}");
             
-            if (!string.IsNullOrEmpty(_token))
+            if (!string.IsNullOrEmpty(_accessToken))
             {
-                request.Headers.Add("Authorization", $"Bearer {_token}");
+                request.Headers.Add("Authorization", $"Bearer {_accessToken}");
             }
             
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
             
             var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+            
+            // OpenAPI response structure
             if (result.TryGetProperty("result", out var resultElement) &&
                 resultElement.TryGetProperty("data", out var dataElement) &&
                 dataElement.GetArrayLength() > 0)

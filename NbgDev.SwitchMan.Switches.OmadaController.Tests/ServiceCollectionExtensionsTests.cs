@@ -13,8 +13,8 @@ public class ServiceCollectionExtensionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://localhost:8043"},
-            {"OmadaController:Username", "admin"},
-            {"OmadaController:Password", "admin"}
+            {"OmadaController:ClientId", "test-client-id"},
+            {"OmadaController:ClientSecret", "test-client-secret"}
         };
 
         return new ConfigurationBuilder()
@@ -80,8 +80,8 @@ public class ServiceCollectionExtensionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://custom.example.com:8043"},
-            {"OmadaController:Username", "testuser"},
-            {"OmadaController:Password", "testpass"}
+            {"OmadaController:ClientId", "custom-client-id"},
+            {"OmadaController:ClientSecret", "custom-secret"}
         };
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
@@ -105,8 +105,8 @@ public class ServiceCollectionExtensionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://localhost:8043"},
-            {"OmadaController:Username", "admin"},
-            {"OmadaController:Password", "admin"},
+            {"OmadaController:ClientId", "test-client-id"},
+            {"OmadaController:ClientSecret", "test-secret"},
             {"OmadaController:AllowInvalidCertificate", "false"}
         };
         var configuration = new ConfigurationBuilder()
@@ -131,8 +131,8 @@ public class ServiceCollectionExtensionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://localhost:8043"},
-            {"OmadaController:Username", "admin"},
-            {"OmadaController:Password", "admin"},
+            {"OmadaController:ClientId", "test-client-id"},
+            {"OmadaController:ClientSecret", "test-secret"},
             {"OmadaController:AllowInvalidCertificate", "true"}
         };
         var configuration = new ConfigurationBuilder()

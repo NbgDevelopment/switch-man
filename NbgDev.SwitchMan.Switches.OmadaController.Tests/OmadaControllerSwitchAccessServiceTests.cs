@@ -22,8 +22,8 @@ public class OmadaControllerSwitchAccessServiceTests
         _options = Options.Create(new OmadaControllerOptions
         {
             ControllerUrl = "https://localhost:8043",
-            Username = "admin",
-            Password = "admin"
+            ClientId = "test-client-id",
+            ClientSecret = "test-client-secret"
         });
         _service = new OmadaControllerSwitchAccessService(_mockLogger, _httpClient, _options);
     }
@@ -48,8 +48,8 @@ public class OmadaControllerSwitchAccessServiceTests
         var customOptions = Options.Create(new OmadaControllerOptions
         {
             ControllerUrl = "https://custom.example.com:8043",
-            Username = "testuser",
-            Password = "testpass"
+            ClientId = "custom-client-id",
+            ClientSecret = "custom-secret"
         });
         
         // Act

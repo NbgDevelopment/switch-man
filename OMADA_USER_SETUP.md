@@ -1,19 +1,19 @@
-# Omada Controller User Setup Guide
+# Omada Controller OpenAPI Setup Guide
 
-This guide explains how to create a dedicated user account in TP-Link Omada Controller with the minimal permissions required for Switch Man to function properly.
+This guide explains how to configure the TP-Link Omada Controller's OpenAPI to work with Switch Man using OAuth 2.0 authentication.
 
 ## Overview
 
-Switch Man requires API access to the Omada Controller to:
+Switch Man uses the Omada Controller's **OpenAPI** with **OAuth 2.0 Client Credentials** authentication to:
 - **Current Operations**: Read switch information, retrieve port configurations and VLAN assignments
 - **Future Operations**: Configure port VLAN assignments and manage switch ports
 
-For security best practices, it's recommended to create a dedicated service account rather than using the default admin account.
+The OpenAPI uses a Client ID and Client Secret for authentication, which is more secure than username/password authentication.
 
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
-2. [Creating a Dedicated User Account](#creating-a-dedicated-user-account)
+2. [Creating an OpenAPI Application](#creating-an-openapi-application)
 3. [Required Permissions - Current Features](#required-permissions---current-features)
 4. [Required Permissions - Future Features](#required-permissions---future-features)
 5. [Security Best Practices](#security-best-practices)
@@ -22,95 +22,117 @@ For security best practices, it's recommended to create a dedicated service acco
 ## Prerequisites
 
 - Access to Omada Controller as an administrator
-- Omada Controller version 5.x or higher (recommended)
+- Omada Controller version 5.0 or higher (with OpenAPI support)
 - Network connectivity to the controller
+- HTTPS access to the controller (typically port 8043)
 
-## Creating a Dedicated User Account
+## Creating an OpenAPI Application
 
-### Step 1: Access User Management
+The Omada Controller uses OAuth 2.0 for API authentication. Follow these steps to create an OpenAPI application:
 
-1. Log in to your Omada Controller web interface
-2. Navigate to **Settings** β†' **Administrators**
-3. Click **Create New Administrator**
+### Step 1: Access OpenAPI Settings
 
-### Step 2: Configure Basic Account Details
+1. Log in to your Omada Controller web interface as an administrator
+2. Navigate to **Settings** β†' **Platform Integration** β†' **Open API**
+3. You should see the OpenAPI management page
 
-Fill in the following information:
+### Step 2: Create New Application
 
-- **Username**: `switchman-api` (or your preferred name)
-- **Email**: Provide a valid email address for notifications
-- **Password**: Use a strong password (minimum 8 characters, mix of uppercase, lowercase, numbers, special characters)
-- **Confirm Password**: Re-enter the password
-- **Account Status**: Enabled
+1. Click **Add New App** or **Create Application** button
+2. Fill in the application details:
 
-### Step 3: Assign Permissions
+**Basic Information:**
+- **App Name**: `SwitchMan` (or your preferred descriptive name)
+- **Description**: `Network switch management via Switch Man` (optional)
 
-The Omada Controller uses role-based access control. You have two options:
+**Access Mode:**
+- Select **Client Credentials** (This is for server-to-server authentication without user interaction)
+- Do NOT use Authorization Code mode - that's for user-interactive applications
 
-#### Option A: Create Custom Role (Recommended for Production)
+### Step 3: Configure Privileges
 
-Create a custom role with minimal required permissions:
+Grant the following permissions based on your needs:
 
-1. Go to **Settings** β†' **Roles**
-2. Click **Create New Role**
-3. Name: `Switch Man API Access`
-4. Configure the following permissions:
+#### Option A: Minimal Permissions (Recommended for Production)
 
-**Current Required Permissions:**
-- βœ… **Switch**: View Devices
-- βœ… **Switch**: View Port Configuration
-- βœ… **Network**: View VLANs
-- βœ… **System**: API Access
+Select only the permissions needed for Switch Man's current operations:
 
-**Additional Permissions for Future Features:**
-- βœ… **Switch**: Modify Port Configuration
-- βœ… **Switch**: Configure Ports
-- βœ… **Network**: Manage VLANs
+**For Current Read-Only Operations:**
+- βœ… **Switches**: View/Read access
+- βœ… **Switch Ports**: View/Read access  
+- βœ… **VLANs**: View/Read access
 
-5. Save the custom role
-6. Assign this role to the `switchman-api` user
+**For Future Write Operations (Port Configuration):**
+- βœ… **Switch Ports**: Modify/Write access
+- βœ… **VLANs**: Modify/Write access (if needed)
 
-#### Option B: Use Built-in Role (For Testing/Development)
+#### Option B: Full Access (For Testing/Development)
 
-For testing or development environments, you can use a built-in role:
+For testing or development environments, you can grant full API access, but this is NOT recommended for production.
 
-- **Viewer Role**: Provides read-only access (sufficient for current features)
-- **Operator Role**: Provides read and limited write access (needed for future port configuration features)
+### Step 4: Save and Obtain Credentials
 
-**Note**: The Operator role may grant more permissions than necessary, so the custom role approach is recommended for production.
+1. Click **Save** or **Create** to create the application
+2. **IMPORTANT**: The system will display the **Client ID** and **Client Secret**
+3. **Copy both values immediately** - the Client Secret is only shown once!
+4. Store these credentials securely (use a password manager or secure vault)
 
-### Step 4: Configure Access Scope (Site Selection)
+Example credentials (yours will be different):
+```
+Client ID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+Client Secret: 1234567890abcdef1234567890abcdef12345678
+```
 
-1. In the user configuration, select which sites this user can access
-2. For most deployments, select **All Sites** or the specific site where your switches are managed
-3. This ensures the API user can access all switches you want to manage with Switch Man
+### Step 5: Configure Switch Man
 
-### Step 5: Save and Verify
+Use the credentials in your Switch Man configuration:
 
-1. Click **Save** to create the user
-2. Note down the username and password for configuration in Switch Man
-3. Test the login by signing out and logging back in with the new credentials
+**Via Environment Variables:**
+```bash
+export OmadaController__ClientId="your-client-id"
+export OmadaController__ClientSecret="your-client-secret"
+export OmadaController__ControllerUrl="https://192.168.1.100:8043"
+```
+
+**Via appsettings.json:**
+```json
+{
+  "OmadaController": {
+    "ControllerUrl": "https://192.168.1.100:8043",
+    "ClientId": "your-client-id",
+    "ClientSecret": "your-client-secret"
+  }
+}
+```
+
+**Via Docker:**
+```bash
+docker run -d -p 8080:8080 \
+  -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
+  -e OmadaController__ClientId=your-client-id \
+  -e OmadaController__ClientSecret=your-client-secret \
+  --name switchman switchman:latest
+```
 
 ## Required Permissions - Current Features
 
-Switch Man currently performs **read-only** operations on the Omada Controller. The following permissions are required:
+Switch Man currently performs **read-only** operations on the Omada Controller. The OpenAPI application needs the following access:
 
 ### Minimum Permissions Table
 
-| Permission Category | Required Permission | Purpose |
+| Resource Category | Required Permission | Purpose |
 |-------------------|-------------------|---------|
-| **Switches** | View Devices | List and view switch information |
-| **Switches** | View Port Configuration | Read port settings and VLAN assignments |
-| **Network** | View VLANs | Read VLAN configuration |
-| **System** | API Access | Enable API authentication and requests |
+| **Switches** | Read/View | List and view switch information |
+| **Switch Ports** | Read/View | Read port settings and VLAN assignments |
+| **VLANs** | Read/View | Read VLAN configuration |
 
 ### API Operations Used
 
-Current implementation uses these Omada Controller API endpoints:
+Current implementation uses these Omada Controller OpenAPI endpoints:
 
-- `GET /api/v2/sites/{site}/switches` - List switches and basic information
-- `GET /api/v2/sites/{site}/switches/{switchId}/ports` - Retrieve port configurations
-- `GET /api/v2/login` - Authenticate and obtain access token
+- `POST /openapi/authorize/token` - OAuth 2.0 authentication
+- `GET /openapi/v1/sites/{site}/switches` - List switches and basic information
+- `GET /openapi/v1/sites/{site}/switches/{switchId}/ports` - Retrieve port configurations
 
 ## Required Permissions - Future Features
 
@@ -118,33 +140,35 @@ When Switch Man adds the ability to configure port VLANs, additional permissions
 
 ### Extended Permissions Table
 
-| Permission Category | Required Permission | Purpose |
+| Resource Category | Required Permission | Purpose |
 |-------------------|-------------------|---------|
-| **Switches** | Modify Port Configuration | Change port settings |
-| **Switches** | Configure Ports | Apply VLAN assignments to ports |
-| **Network** | Manage VLANs | Create/modify VLANs if needed |
+| **Switch Ports** | Write/Modify | Change port settings |
+| **Switch Ports** | Configure | Apply VLAN assignments to ports |
+| **VLANs** | Write/Modify | Create/modify VLANs if needed |
 
 ### Future API Operations
 
-Planned features will use these additional endpoints:
+Planned features will use these additional OpenAPI endpoints:
 
-- `POST /api/v2/sites/{site}/switches/{switchId}/ports/{portId}` - Configure individual port
-- `PATCH /api/v2/sites/{site}/switches/{switchId}/ports/{portId}/vlan` - Update port VLAN assignment
-- `PUT /api/v2/sites/{site}/switches/{switchId}/ports/bulk` - Bulk port configuration
+- `POST /openapi/v1/sites/{site}/switches/{switchId}/ports/{portId}` - Configure individual port
+- `PATCH /openapi/v1/sites/{site}/switches/{switchId}/ports/{portId}/vlan` - Update port VLAN assignment
+- `PUT /openapi/v1/sites/{site}/switches/{switchId}/ports/bulk` - Bulk port configuration
 
 ## Security Best Practices
 
-### 1. Use Dedicated Service Accounts
+### 1. Use Dedicated OpenAPI Applications
 
-- βœ… **DO**: Create a dedicated `switchman-api` user with minimal permissions
-- ❌ **DON'T**: Use the default admin account for API access
+- βœ… **DO**: Create a dedicated OpenAPI application named `SwitchMan` with minimal permissions
+- ❌ **DON'T**: Reuse OpenAPI credentials across multiple applications
+- βœ… **DO**: Use descriptive names for your applications to track usage
 
-### 2. Strong Password Requirements
+### 2. Secure Credential Management
 
-- Use passwords with at least 16 characters
-- Include uppercase, lowercase, numbers, and special characters
-- Store passwords securely using environment variables or secrets management
-- Never commit passwords to source control
+- **Client Secret is sensitive**: Treat it like a password - it's only shown once during creation
+- **Use strong secrets**: The Omada Controller generates secure Client Secrets automatically
+- **Store securely**: Use environment variables, secrets management systems, or secure vaults
+- **Never commit to source control**: Add `appsettings.json` with secrets to `.gitignore`
+- **Rotate credentials**: Create new OpenAPI applications periodically and delete old ones
 
 ### 3. Environment Variable Configuration
 
@@ -154,30 +178,35 @@ Configure credentials using environment variables (recommended):
 # Docker
 docker run -d -p 8080:8080 \
   -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
-  -e OmadaController__Username=switchman-api \
-  -e OmadaController__Password=your-secure-password \
+  -e OmadaController__ClientId=your-client-id \
+  -e OmadaController__ClientSecret=your-client-secret \
   --name switchman switchman:latest
 
 # Kubernetes Secret (recommended for production)
 kubectl create secret generic switchman-omada-creds \
   --from-literal=controller-url=https://192.168.1.100:8043 \
-  --from-literal=username=switchman-api \
-  --from-literal=password=your-secure-password
+  --from-literal=client-id=your-client-id \
+  --from-literal=client-secret=your-client-secret
+
+# User Secrets (for local development)
+dotnet user-secrets set "OmadaController:ClientId" "your-client-id"
+dotnet user-secrets set "OmadaController:ClientSecret" "your-client-secret"
 ```
 
 ### 4. Network Security
 
-- Use HTTPS for all controller communications
+- Use HTTPS for all controller communications (enforced by Omada Controller)
 - Consider network segmentation to isolate management traffic
 - Use firewall rules to restrict API access to authorized hosts
-- Enable two-factor authentication on the Omada Controller when possible
+- Monitor OpenAPI access logs in the Omada Controller
 
 ### 5. Regular Security Audits
 
-- Review user permissions quarterly
-- Rotate API credentials periodically (e.g., every 90 days)
+- Review OpenAPI applications quarterly
+- Remove unused or old applications
+- Rotate credentials periodically (create new app, update config, delete old app)
 - Monitor API access logs for unusual activity
-- Disable unused accounts promptly
+- Disable unused applications promptly
 
 ### 6. Least Privilege Principle
 
@@ -189,24 +218,31 @@ kubectl create secret generic switchman-omada-creds \
 
 ### Authentication Failures
 
-**Problem**: `401 Unauthorized` or authentication errors
+**Problem**: `401 Unauthorized` or "Failed to obtain access token" errors
 
 **Solutions**:
-1. Verify username and password are correct
-2. Check that the user account is enabled
-3. Ensure API access is enabled for the user role
-4. Verify the controller URL is accessible
-5. Check that SSL certificate validation issues aren't blocking the connection
+1. Verify Client ID and Client Secret are correct (check for copy/paste errors)
+2. Ensure the OpenAPI application is enabled in the Omada Controller
+3. Check that the application hasn't been deleted or disabled
+4. Verify the controller URL is correct and accessible
+5. Check Omada Controller logs: **System** β†' **Logs** β†' **Controller Logs**
+6. Ensure the OpenAPI feature is enabled in your Omada Controller version
+
+**Common Causes**:
+- Incorrect Client ID or Client Secret
+- Application deleted or disabled
+- OpenAPI not enabled on the controller
+- Network connectivity issues
 
 ### Permission Denied Errors
 
 **Problem**: `403 Forbidden` when accessing switch information
 
 **Solutions**:
-1. Verify the user has "View Devices" permission
-2. Check that the user has access to the correct site(s)
-3. Ensure "API Access" permission is granted
-4. Review the role assignment for the user
+1. Verify the OpenAPI application has required permissions (see Required Permissions section)
+2. Check that the application has access to the correct site(s)
+3. Review the privilege settings for the application
+4. Ensure the switches are properly adopted in the controller
 
 ### Connection Issues
 
@@ -216,7 +252,7 @@ kubectl create secret generic switchman-omada-creds \
 1. Verify the controller URL format: `https://host:port` (typically port 8043)
 2. Check firewall rules allow HTTPS traffic on port 8043
 3. Confirm the Omada Controller service is running
-4. Test connectivity: `curl -k https://192.168.1.100:8043/api/info`
+4. Test connectivity: `curl -k https://192.168.1.100:8043`
 5. **SSL Certificate Issues**: If using self-signed certificates, see below
 
 ### SSL Certificate Issues
@@ -236,8 +272,8 @@ For **development/testing environments** (use with caution):
    ```bash
    docker run -d -p 8080:8080 \
      -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
-     -e OmadaController__Username=switchman-api \
-     -e OmadaController__Password=your-password \
+     -e OmadaController__ClientId=your-client-id \
+     -e OmadaController__ClientSecret=your-client-secret \
      -e OmadaController__AllowInvalidCertificate=true \
      --name switchman switchman:latest
    ```
@@ -246,8 +282,8 @@ For **development/testing environments** (use with caution):
    {
      "OmadaController": {
        "ControllerUrl": "https://192.168.1.100:8043",
-       "Username": "switchman-api",
-       "Password": "your-password",
+       "ClientId": "your-client-id",
+       "ClientSecret": "your-client-secret",
        "AllowInvalidCertificate": true
      }
    }
