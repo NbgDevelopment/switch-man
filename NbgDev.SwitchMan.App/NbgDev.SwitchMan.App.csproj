@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <UserSecretsId>767d9ad5-12d7-4907-bec9-ffee906ce7ee</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NbgDev.SwitchMan.Switches.OmadaController\NbgDev.SwitchMan.Switches.OmadaController.csproj" />
     <ProjectReference Include="..\NbgDev.SwitchMan.Switches.TLSG2008\NbgDev.SwitchMan.Switches.TLSG2008.csproj" />
   </ItemGroup>
 
