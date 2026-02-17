@@ -24,7 +24,7 @@ builder.Services.AddSingleton<VlanService>();
 builder.Services.AddSingleton<SwitchService>();
 
 // Register switch access service
-builder.Services.AddOmadaControllerSwitchAccess(builder.Configuration.GetSection("OmadaController"));
+builder.Services.AddOmadaControllerSwitchAccess(builder.Configuration);
 
 var app = builder.Build();
 
