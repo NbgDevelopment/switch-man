@@ -49,8 +49,10 @@ public static class ServiceCollectionExtensions
             };
         });
         
-        // Register the service as ISwitchAccessService
-        services.AddSingleton<ISwitchAccessService, OmadaControllerSwitchAccessService>();
+        // Register the service as ISwitchAccessService using a factory to ensure
+        // it goes through the HttpClient factory pipeline
+        services.AddSingleton<ISwitchAccessService>(serviceProvider => 
+            serviceProvider.GetRequiredService<OmadaControllerSwitchAccessService>());
         
         return services;
     }
