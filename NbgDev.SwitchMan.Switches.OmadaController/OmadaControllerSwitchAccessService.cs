@@ -92,7 +92,7 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
                 {
                     try
                     {
-                        var network = networks.SingleOrDefault(n => n.Id == port.ProfileId);
+                        var network = networks.SingleOrDefault(n => n.Name == port.ProfileName);
 
                         var vlanId = network?.Vlan ?? 1; // Default to VLAN 1 if not found
                         var vlanName = network?.Name ?? string.Empty;
