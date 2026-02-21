@@ -134,3 +134,39 @@ The application is designed to run in Docker:
 - **Service not found**: Check service registration in `Program.cs`
 - **Page not routing**: Verify `@page` directive is present
 - **Docker issues**: Ensure Docker is running and port 8080 is available
+
+## Omada Controller OpenAPI (version 5.15.24)
+
+The switch integration uses the TP-Link Omada Controller OpenAPI (v5.15.24). Documentation is available at https://omada-northbound-docs.tplinkcloud.com/#/versions (select version 5.15.24).
+
+### Authentication
+- OAuth 2.0 Client Credentials flow
+- `POST /openapi/authorize/token?grant_type=client_credentials`
+- Request body: `{ "omadacId": "<omadaId>", "client_id": "<clientId>", "client_secret": "<clientSecret>" }`
+- Returns: `{ "result": { "accessToken": "...", "expiresIn": 7200 } }`
+- All subsequent requests use header: `Authorization: Bearer AccessToken=<token>`
+
+### Key Endpoints
+All endpoints are prefixed with `/openapi/v1/{omadaId}`.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/sites` | List all sites (`page`, `pageSize` query params) |
+| `GET` | `/sites/{siteId}/devices` | List all devices in a site |
+| `GET` | `/sites/{siteId}/switches/{mac}` | Get switch overview including port list |
+| `GET` | `/sites/{siteId}/lan-profiles` | List LAN port profiles |
+| `GET` | `/sites/{siteId}/lan-networks` | List LAN networks (VLAN definitions) |
+
+### Key Response Models
+- **Site**: `{ "siteId": "...", "name": "..." }`
+- **Device**: `{ "mac": "...", "ip": "...", "type": "switch"|"ap"|..., "name": "..." }`
+- **Switch port** (in switch overview): `{ "port": 1, "name": "...", "profileId": "...", "profileName": "..." }`
+- **LAN Profile**: `{ "id": "...", "name": "...", "nativeNetworkId": "..." }`
+- **LAN Network**: `{ "id": "...", "name": "...", "vlan": 10, "vlanType": 0 }`
+
+### Implementation Notes
+- A port's VLAN is resolved via a two-step lookup:
+  1. Match `port.profileId` to a LAN profile's `id` to get the profile.
+  2. Match the profile's `nativeNetworkId` to a LAN network's `id`, then read `network.vlan` (integer) and `network.name` (string).
+- Default VLAN ID is 1 when no matching network is found.
+- Port number comes from `port.port` (1-based) in the switch overview response.

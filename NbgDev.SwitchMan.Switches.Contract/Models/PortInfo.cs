@@ -15,6 +15,11 @@ public class PortInfo
     /// </summary>
     public int VlanId { get; set; }
 
+    /// <summary>
+    /// VLAN name assigned to this port
+    /// </summary>
+    public string VlanName { get; set; } = string.Empty;
+
     public PortInfo()
     {
     }
@@ -23,5 +28,12 @@ public class PortInfo
     {
         PortNumber = portNumber;
         VlanId = vlanId;
+    }
+
+    public PortInfo(int portNumber, int vlanId, string vlanName)
+    {
+        PortNumber = portNumber;
+        VlanId = vlanId;
+        VlanName = vlanName;
     }
 }
