@@ -154,14 +154,23 @@ To use switch access via Omada Controller:
 
 3. **Configuration via Environment Variables**:
    - `OmadaController__ControllerUrl` - Controller URL (default: `https://localhost:8043`)
+   - `OmadaController__OmadaId` - Omada Controller ID (required - see below for how to find it)
    - `OmadaController__ClientId` - OAuth 2.0 Client ID from OpenAPI app (required)
    - `OmadaController__ClientSecret` - OAuth 2.0 Client Secret from OpenAPI app (required)
+   - `OmadaController__AllowInvalidCertificate` - Set to `true` for self-signed certificates (default: `false`)
 
-4. **Example Docker Configuration**:
+4. **Finding Your Omada ID**:
+   - Log in to your Omada Controller web interface
+   - Look at the browser URL: `https://<controller-ip>:8043/<omadaId>/...`
+   - The Omada ID is the long hexadecimal string in the URL path (e.g., `1234567890abcdef1234567890abcdef`)
+   - Alternatively, you can find it in the controller's site settings or use the API to retrieve it
+
+5. **Example Docker Configuration**:
    ```bash
    # With valid SSL certificate (default)
    docker run -d -p 8080:8080 \
      -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
+     -e OmadaController__OmadaId=1234567890abcdef1234567890abcdef \
      -e OmadaController__ClientId=your-client-id \
      -e OmadaController__ClientSecret=your-client-secret \
      --name switchman switchman:latest
@@ -169,18 +178,19 @@ To use switch access via Omada Controller:
    # With self-signed certificate (development/testing only)
    docker run -d -p 8080:8080 \
      -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
+     -e OmadaController__OmadaId=1234567890abcdef1234567890abcdef \
      -e OmadaController__ClientId=your-client-id \
      -e OmadaController__ClientSecret=your-client-secret \
      -e OmadaController__AllowInvalidCertificate=true \
      --name switchman switchman:latest
    ```
 
-5. **Network Requirements**:
+6. **Network Requirements**:
    - Controller must be accessible via HTTPS
    - Firewall rules should allow HTTPS traffic to the controller
    - Controller API must be enabled
 
-6. **Advantages over Direct SNMP**:
+7. **Advantages over Direct SNMP**:
    - Centralized management of multiple switches
    - No need to configure SNMP on each switch individually
    - Access to additional management features

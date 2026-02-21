@@ -37,6 +37,8 @@ builder.Services.AddOmadaControllerSwitchAccess(builder.Configuration);
 
 **Authentication**: Uses OAuth 2.0 Client Credentials flow with OpenAPI. Create an OpenAPI app in your controller (Settings > Platform Integration > Open API) to obtain credentials.
 
+**Omada Controller ID**: The unique identifier for your Omada Controller instance. You can find it in your browser's URL when logged into the controller (e.g., `https://controller:8043/<omadaId>/...`).
+
 **SSL Certificate Validation**: By default, Switch Man validates SSL certificates. If your Omada Controller uses a self-signed certificate, you can disable validation by setting `AllowInvalidCertificate` to `true`. **WARNING**: Only use this in development/testing environments.
 
 When using Docker:
@@ -44,6 +46,7 @@ When using Docker:
 # With valid SSL certificate (recommended for production)
 docker run -d -p 8080:8080 \
   -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
+  -e OmadaController__OmadaId=1234567890abcdef1234567890abcdef \
   -e OmadaController__ClientId=your-client-id \
   -e OmadaController__ClientSecret=your-client-secret \
   --name switchman switchman:latest
@@ -51,6 +54,7 @@ docker run -d -p 8080:8080 \
 # With self-signed certificate (development/testing only)
 docker run -d -p 8080:8080 \
   -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
+  -e OmadaController__OmadaId=1234567890abcdef1234567890abcdef \
   -e OmadaController__ClientId=your-client-id \
   -e OmadaController__ClientSecret=your-client-secret \
   -e OmadaController__AllowInvalidCertificate=true \
@@ -62,6 +66,7 @@ When using appsettings.json:
 {
   "OmadaController": {
     "ControllerUrl": "https://192.168.1.100:8043",
+    "OmadaId": "1234567890abcdef1234567890abcdef",
     "ClientId": "your-client-id",
     "ClientSecret": "your-client-secret",
     "AllowInvalidCertificate": false
@@ -74,6 +79,7 @@ When using appsettings.json:
 {
   "OmadaController": {
     "ControllerUrl": "https://192.168.1.100:8043",
+    "OmadaId": "1234567890abcdef1234567890abcdef",
     "ClientId": "your-client-id",
     "ClientSecret": "your-client-secret",
     "AllowInvalidCertificate": true
@@ -81,10 +87,31 @@ When using appsettings.json:
 }
 ```
 
+### Finding Your Omada ID
+
+The Omada ID is a unique identifier for your Omada Controller instance. There are several ways to find it:
+
+**Method 1: From Browser URL**
+1. Log in to your Omada Controller web interface
+2. Look at the URL in your browser's address bar
+3. The URL will be formatted as: `https://<controller-ip>:8043/<omadaId>/...`
+4. The Omada ID is the long hexadecimal string (typically 32 characters) in the URL path
+5. Example: If your URL is `https://192.168.1.100:8043/1234567890abcdef1234567890abcdef/site/default`, then your Omada ID is `1234567890abcdef1234567890abcdef`
+
+**Method 2: From Controller Settings**
+1. Log in to your Omada Controller
+2. Navigate to Settings
+3. The Omada ID may be displayed in the controller information section
+
+**Method 3: Using OpenAPI**
+1. After creating an OpenAPI application, the Omada ID is typically required for all API calls
+2. It's the same ID used in the API endpoint paths: `/openapi/v1/{omadaId}/...`
+
 ### Default Values
 
 If no configuration is provided, the following defaults are used:
 - ControllerUrl: `https://localhost:8043`
+- OmadaId: `""` (empty - must be configured)
 - ClientId: `""` (empty - must be configured)
 - ClientSecret: `""` (empty - must be configured)
 - AllowInvalidCertificate: `false` (SSL certificate validation enabled)

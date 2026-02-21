@@ -22,6 +22,7 @@ public class OmadaControllerSwitchAccessServiceTests
         _options = Options.Create(new OmadaControllerOptions
         {
             ControllerUrl = "https://localhost:8043",
+            OmadaId = "test-omada-id",
             ClientId = "test-client-id",
             ClientSecret = "test-client-secret"
         });
@@ -48,6 +49,7 @@ public class OmadaControllerSwitchAccessServiceTests
         var customOptions = Options.Create(new OmadaControllerOptions
         {
             ControllerUrl = "https://custom.example.com:8043",
+            OmadaId = "custom-omada-id",
             ClientId = "custom-client-id",
             ClientSecret = "custom-secret"
         });

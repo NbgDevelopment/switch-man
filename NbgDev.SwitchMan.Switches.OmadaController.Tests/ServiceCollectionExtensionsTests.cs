@@ -13,6 +13,7 @@ public class ServiceCollectionExtensionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://localhost:8043"},
+            {"OmadaController:OmadaId", "test-omada-id"},
             {"OmadaController:ClientId", "test-client-id"},
             {"OmadaController:ClientSecret", "test-client-secret"}
         };
@@ -80,6 +81,7 @@ public class ServiceCollectionExtensionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://custom.example.com:8043"},
+            {"OmadaController:OmadaId", "custom-omada-id"},
             {"OmadaController:ClientId", "custom-client-id"},
             {"OmadaController:ClientSecret", "custom-secret"}
         };
@@ -105,6 +107,7 @@ public class ServiceCollectionExtensionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://localhost:8043"},
+            {"OmadaController:OmadaId", "test-omada-id"},
             {"OmadaController:ClientId", "test-client-id"},
             {"OmadaController:ClientSecret", "test-secret"},
             {"OmadaController:AllowInvalidCertificate", "false"}
@@ -131,6 +134,7 @@ public class ServiceCollectionExtensionsTests
         var inMemorySettings = new Dictionary<string, string?>
         {
             {"OmadaController:ControllerUrl", "https://localhost:8043"},
+            {"OmadaController:OmadaId", "test-omada-id"},
             {"OmadaController:ClientId", "test-client-id"},
             {"OmadaController:ClientSecret", "test-secret"},
             {"OmadaController:AllowInvalidCertificate", "true"}

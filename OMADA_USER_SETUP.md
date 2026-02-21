@@ -89,9 +89,10 @@ Use the credentials in your Switch Man configuration:
 
 **Via Environment Variables:**
 ```bash
+export OmadaController__ControllerUrl="https://192.168.1.100:8043"
+export OmadaController__OmadaId="1234567890abcdef1234567890abcdef"
 export OmadaController__ClientId="your-client-id"
 export OmadaController__ClientSecret="your-client-secret"
-export OmadaController__ControllerUrl="https://192.168.1.100:8043"
 ```
 
 **Via appsettings.json:**
@@ -99,6 +100,7 @@ export OmadaController__ControllerUrl="https://192.168.1.100:8043"
 {
   "OmadaController": {
     "ControllerUrl": "https://192.168.1.100:8043",
+    "OmadaId": "1234567890abcdef1234567890abcdef",
     "ClientId": "your-client-id",
     "ClientSecret": "your-client-secret"
   }
@@ -109,10 +111,22 @@ export OmadaController__ControllerUrl="https://192.168.1.100:8043"
 ```bash
 docker run -d -p 8080:8080 \
   -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
+  -e OmadaController__OmadaId=1234567890abcdef1234567890abcdef \
   -e OmadaController__ClientId=your-client-id \
   -e OmadaController__ClientSecret=your-client-secret \
   --name switchman switchman:latest
 ```
+
+### Step 6: Find Your Omada ID
+
+The Omada ID is required for all API calls. To find it:
+
+1. **From Browser URL**: After logging in to your controller, look at the URL
+   - Format: `https://<controller-ip>:8043/<omadaId>/...`
+   - Example: `https://192.168.1.100:8043/1234567890abcdef1234567890abcdef/site/default`
+   - The Omada ID is the 32-character hexadecimal string in the path
+
+2. **Copy the Omada ID** and add it to your configuration as shown above
 
 ## Required Permissions - Current Features
 
