@@ -154,15 +154,19 @@ All endpoints are prefixed with `/openapi/v1/{omadaId}`.
 | `GET` | `/sites` | List all sites (`page`, `pageSize` query params) |
 | `GET` | `/sites/{siteId}/devices` | List all devices in a site |
 | `GET` | `/sites/{siteId}/switches/{mac}` | Get switch overview including port list |
-| `GET` | `/sites/{siteId}/lan-networks` | List LAN networks (VLAN profiles) |
+| `GET` | `/sites/{siteId}/lan-profiles` | List LAN port profiles |
+| `GET` | `/sites/{siteId}/lan-networks` | List LAN networks (VLAN definitions) |
 
 ### Key Response Models
 - **Site**: `{ "siteId": "...", "name": "..." }`
 - **Device**: `{ "mac": "...", "ip": "...", "type": "switch"|"ap"|..., "name": "..." }`
 - **Switch port** (in switch overview): `{ "port": 1, "name": "...", "profileId": "...", "profileName": "..." }`
+- **LAN Profile**: `{ "id": "...", "name": "...", "nativeNetworkId": "..." }`
 - **LAN Network**: `{ "id": "...", "name": "...", "vlan": 10, "vlanType": 0 }`
 
 ### Implementation Notes
-- A port's VLAN is resolved by matching `port.profileId` to a LAN network's `id`, then reading `network.vlan` (integer) and `network.name` (string).
+- A port's VLAN is resolved via a two-step lookup:
+  1. Match `port.profileId` to a LAN profile's `id` to get the profile.
+  2. Match the profile's `nativeNetworkId` to a LAN network's `id`, then read `network.vlan` (integer) and `network.name` (string).
 - Default VLAN ID is 1 when no matching network is found.
-- Port indexing is 1-based.
+- Port number comes from `port.port` (1-based) in the switch overview response.
