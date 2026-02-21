@@ -11,13 +11,13 @@ Switch Man is a web-based application built with .NET 10 Blazor Server that prov
 - **Web-Based Interface**: Access from any browser
 - **Simple Home Page**: Landing page with clear app title and access to settings
 - **VLAN Management**: Add, view, and delete VLANs with ease
-- **Switch Management**: Add network switches and retrieve port information via SNMP
+- **Switch Management**: Add network switches and retrieve port information via Omada Controller API
 - **Input Validation**: Ensures VLAN IDs are within the valid range (1-4094)
 - **Real-time Updates**: Blazor Server provides real-time UI updates
 - **Delete Functionality**: Simple button-based deletion of VLANs and switches
 - **Persistent Storage**: VLANs and switches are stored in JSON format and persist across restarts
 - **Configurable Storage Path**: Storage location can be customized via configuration
-- **SNMP Integration**: Retrieve port count and VLAN assignments from network switches
+- **Omada Controller Integration**: Retrieve port count and VLAN assignments from switches managed by TP-Link Omada Controller
 
 ## Platform Support
 
@@ -84,11 +84,8 @@ NbgDev.SwitchMan.Switches.Contract/
 └── ISwitchAccessService # Interface for switch access
     └── Models/          # Port information models
 
-NbgDev.SwitchMan.Switches.TLSG2008/
-└── Implementation       # SNMP-based implementation for TL-SG2008 switches
-
 NbgDev.SwitchMan.Switches.OmadaController/
-└── Implementation       # API-based implementation for TP-Link Omada Controller
+└── Implementation       # OAuth 2.0 API-based implementation for TP-Link Omada Controller
 ```
 
 ## Usage
@@ -100,74 +97,41 @@ NbgDev.SwitchMan.Switches.OmadaController/
 5. **View VLANs** - All configured VLANs appear in the list on the right
 6. **Delete VLANs** - Click the "Delete" button next to any VLAN
 7. **Add Switches** - Enter switch name and IP address, then click "Add Switch"
-8. **View Switch Information** - Port count and VLAN assignments are retrieved and logged automatically
-
-### Switch Configuration Requirements
-
-To enable SNMP access on your TL-SG2008 switch:
-
-1. **Enable SNMP on the switch**:
-   - Log into the switch's web interface (default: http://192.168.0.1)
-   - Navigate to **System Tools** > **SNMP Config**
-   - Set **SNMP** to **Enable**
-   - Configure the **SNMP Community String** (default is "public")
-   - Click **Apply** to save settings
-
-2. **Network Requirements**:
-   - Ensure the switch is accessible from the host running Switch Man
-   - The switch must respond to SNMP requests on UDP port 161
-   - Firewall rules should allow SNMP traffic between Switch Man and the switch
-
-3. **Supported Switches**:
-   - **Direct SNMP Access**: Currently supports TP-Link TL-SG2008 switches
-   - **Omada Controller Access**: Supports any switch managed by TP-Link Omada Controller (software or hardware controller)
-   - Uses SNMP v1 protocol with community string authentication for direct access
-   - Uses HTTPS API for Omada Controller access
-   - Default community string: "public" (configurable in future versions)
-
-4. **Troubleshooting**:
-   - If you receive timeout errors when adding a switch:
-     - Verify SNMP is enabled on the switch
-     - Check the community string matches (default: "public")
-     - Ensure network connectivity between Switch Man and the switch
-     - Verify no firewall is blocking UDP port 161
-     - Test SNMP access using tools like `snmpwalk` (Linux/Mac) or SNMP Tester (Windows)
-
-**Example SNMP test command** (Linux/Mac):
-```bash
-snmpwalk -v1 -c public <switch-ip-address> system
-```
+8. **View Switch Information** - Port count and VLAN assignments are retrieved from Omada Controller and logged automatically
 
 ### Omada Controller Configuration
 
 To use switch access via Omada Controller:
 
-1. **User Account Setup** (Recommended):
-   - Create a dedicated user account with minimal required permissions
-   - See [Omada User Setup Guide](./OMADA_USER_SETUP.md) for detailed instructions
-   - **Security Best Practice**: Don't use the default admin account for API access
+1. **Prerequisites**:
+   - TP-Link Omada Controller must be running and accessible via HTTPS
+   - Switches must be adopted and managed by the Omada Controller
+   - Create an OpenAPI application in the controller to get OAuth 2.0 credentials
 
-2. **Controller Setup**:
-   - Ensure your TP-Link Omada Controller is running and accessible
-   - The controller can be software-based (running on a server) or a hardware controller
-   - Ensure switches are adopted and managed by the controller
+2. **Create OpenAPI Application**:
+   - Log into your Omada Controller
+   - Navigate to **Settings** > **Platform Integration** > **Open API**
+   - Click **Add Application** to create a new OpenAPI app
+   - Give it a descriptive name (e.g., "Switch Man")
+   - Copy the **Client ID** and **Client Secret** (shown once only - save them securely!)
+   - **Important**: The Client Secret is only displayed once during creation
 
-3. **Configuration via Environment Variables**:
-   - `OmadaController__ControllerUrl` - Controller URL (default: `https://localhost:8043`)
-   - `OmadaController__OmadaId` - Omada Controller ID (required - see below for how to find it)
+3. **Find Your Omada ID**:
+   - Log in to your Omada Controller web interface
+   - Look at the browser URL: `https://<controller-ip>:8043/<omadaId>/...`
+   - The Omada ID is the long hexadecimal string in the URL path (e.g., `1234567890abcdef1234567890abcdef`)
+   - Alternatively, you can find it in the controller's site settings
+
+4. **Configuration via Environment Variables**:
+   - `OmadaController__ControllerUrl` - Controller URL (e.g., `https://192.168.1.100:8043`)
+   - `OmadaController__OmadaId` - Omada Controller ID (32-character hexadecimal - required)
    - `OmadaController__ClientId` - OAuth 2.0 Client ID from OpenAPI app (required)
    - `OmadaController__ClientSecret` - OAuth 2.0 Client Secret from OpenAPI app (required)
    - `OmadaController__AllowInvalidCertificate` - Set to `true` for self-signed certificates (default: `false`)
 
-4. **Finding Your Omada ID**:
-   - Log in to your Omada Controller web interface
-   - Look at the browser URL: `https://<controller-ip>:8043/<omadaId>/...`
-   - The Omada ID is the long hexadecimal string in the URL path (e.g., `1234567890abcdef1234567890abcdef`)
-   - Alternatively, you can find it in the controller's site settings or use the API to retrieve it
-
 5. **Example Docker Configuration**:
    ```bash
-   # With valid SSL certificate (default)
+   # With valid SSL certificate (production - default)
    docker run -d -p 8080:8080 \
      -e OmadaController__ControllerUrl=https://192.168.1.100:8043 \
      -e OmadaController__OmadaId=1234567890abcdef1234567890abcdef \
@@ -186,17 +150,27 @@ To use switch access via Omada Controller:
    ```
 
 6. **Network Requirements**:
-   - Controller must be accessible via HTTPS
-   - Firewall rules should allow HTTPS traffic to the controller
-   - Controller API must be enabled
+   - Controller must be accessible via HTTPS from the host running Switch Man
+   - Firewall rules should allow HTTPS traffic to the controller (default port 8043)
+   - Controller OpenAPI must be enabled
 
-7. **Advantages over Direct SNMP**:
+7. **Security Best Practices**:
+   - Create a dedicated OpenAPI application for Switch Man (don't reuse credentials)
+   - Use strong, unique Client Secrets
+   - Store credentials securely using environment variables or secrets management
+   - In production, always use valid SSL certificates (`AllowInvalidCertificate=false`)
+   - Regularly rotate OpenAPI credentials
+   - Monitor OpenAPI application access logs in the controller
+
+8. **Advantages of Omada Controller Access**:
    - Centralized management of multiple switches
    - No need to configure SNMP on each switch individually
-   - Access to additional management features
    - Works with any switch model supported by Omada Controller
+   - Access to additional management features through the controller
+   - OAuth 2.0 authentication provides better security than SNMP community strings
+   - Automatic token refresh for long-running operations
 
-**For detailed user setup and permissions**: See [OMADA_USER_SETUP.md](./OMADA_USER_SETUP.md)
+**For detailed OpenAPI setup and permissions**: See [Omada User Setup Guide](./OMADA_USER_SETUP.md)
 
 ### Configuration
 
@@ -213,11 +187,15 @@ Omada Controller Configuration (when using Omada Controller access):
 - `OmadaController__ControllerUrl`: Controller URL
   - Default: `https://localhost:8043`
   - Example: `https://192.168.1.100:8043`
+- `OmadaController__OmadaId`: Omada Controller ID (32-character hexadecimal identifier)
+  - Required: Must be obtained from controller URL or settings
+  - Example: `1234567890abcdef1234567890abcdef`
 - `OmadaController__ClientId`: OAuth 2.0 Client ID from OpenAPI app
   - Required: Must be obtained from Omada Controller (Settings > Platform Integration > Open API)
   - Example: `your-client-id-here`
 - `OmadaController__ClientSecret`: OAuth 2.0 Client Secret from OpenAPI app
   - Required: Must be obtained from Omada Controller (Settings > Platform Integration > Open API)
+  - **Important**: Shown only once during OpenAPI app creation - save securely!
   - Example: `your-client-secret-here`
 - `OmadaController__AllowInvalidCertificate`: Allow self-signed/invalid SSL certificates
   - Default: `false` (secure by default)
@@ -258,29 +236,23 @@ The application creates `vlans.json` and `switches.json` files in the configured
 
 ## Current Limitations
 
-- Supports TL-SG2008 switches via SNMP v1 (direct access)
-- Supports switches managed by TP-Link Omada Controller (API access)
-- SNMP community string is hardcoded to "public"
-- Omada Controller credentials can be configured via environment variables
-- No authentication or multi-user support in the application
+- Switch access via TP-Link Omada Controller only (OAuth 2.0 OpenAPI)
+- Omada Controller credentials must be configured via environment variables or appsettings.json
+- No authentication or multi-user support in the Switch Man application
 - Switch port configuration (changing VLANs) not yet implemented
-- Only one switch access method can be active at a time (configured at startup)
+- Read-only access to switch port information
 
 ## Future Enhancements
 
-- Configurable SNMP community strings and Omada Controller credentials
-- Runtime selection of switch access method (SNMP vs Omada Controller)
-- Support for additional switch models via SNMP
-- Support for multiple Omada Controller instances
-- SNMP v2c and v3 support
-- SSH-based switch management
 - Switch port configuration (assign VLANs to ports)
 - Port-to-VLAN mapping interface
+- Support for multiple Omada Controller instances
 - Switch discovery and auto-detection
 - Import/export configurations
 - Multi-switch management dashboard
 - User authentication and authorization
 - Database backend (SQLite, SQL Server, or MongoDB)
+- Support for additional switch access methods (SNMP, SSH)
 
 ## Contributing
 

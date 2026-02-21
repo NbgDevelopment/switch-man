@@ -4,6 +4,4 @@
   <Project Path="NbgDev.SwitchMan.Switches.Contract/NbgDev.SwitchMan.Switches.Contract.csproj" />
   <Project Path="NbgDev.SwitchMan.Switches.OmadaController.Tests/NbgDev.SwitchMan.Switches.OmadaController.Tests.csproj" />
   <Project Path="NbgDev.SwitchMan.Switches.OmadaController/NbgDev.SwitchMan.Switches.OmadaController.csproj" />
-  <Project Path="NbgDev.SwitchMan.Switches.TLSG2008.Tests/NbgDev.SwitchMan.Switches.TLSG2008.Tests.csproj" />
-  <Project Path="NbgDev.SwitchMan.Switches.TLSG2008/NbgDev.SwitchMan.Switches.TLSG2008.csproj" />
 </Solution>

@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NbgDev.SwitchMan.Switches.OmadaController\NbgDev.SwitchMan.Switches.OmadaController.csproj" />
-    <ProjectReference Include="..\NbgDev.SwitchMan.Switches.TLSG2008\NbgDev.SwitchMan.Switches.TLSG2008.csproj" />
   </ItemGroup>
 
 </Project>
