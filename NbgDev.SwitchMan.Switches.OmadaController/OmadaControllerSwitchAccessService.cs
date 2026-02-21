@@ -15,6 +15,9 @@ namespace NbgDev.SwitchMan.Switches.OmadaController;
 /// </summary>
 public class OmadaControllerSwitchAccessService : ISwitchAccessService
 {
+    // Omada API documentation: https://omada-northbound-docs.tplinkcloud.com/#/versions
+    // Currently used version: 5.15.24
+
     private readonly ILogger<OmadaControllerSwitchAccessService> _logger;
     private readonly HttpClient _httpClient;
     private readonly string _controllerUrl;
@@ -86,13 +89,16 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
 
             if (switchInfo is not null)
             {
+                var networkProfiles = await GetNetworkProfiles(siteId);
                 var networks = await GetNetworks(siteId);
-                int portNumber = 1;
+
                 foreach (var port in switchInfo.PortList)
                 {
+                    int portNumber = port.Port;
                     try
                     {
-                        var network = networks.SingleOrDefault(n => n.Name == port.ProfileName);
+                        var profile = networkProfiles.SingleOrDefault(p => p.Id == port.ProfileId);
+                        var network = networks.SingleOrDefault(n => n.Id == profile?.NativeNetworkId);
 
                         var vlanId = network?.Vlan ?? 1; // Default to VLAN 1 if not found
                         var vlanName = network?.Name ?? string.Empty;
@@ -108,8 +114,6 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
                         // Add default VLAN 1 if query fails
                         portInfoList.Add(new PortInfo(portNumber, 1));
                     }
-
-                    portNumber++;
                 }
             }
 
@@ -302,6 +306,26 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
         if (result is null || result.ErrorCode != 0)
         {
             throw new Exception($"Failed to retrieve site network list from Omada Controller: {result?.Msg ?? "No result or message"}");
+        }
+
+        return result.Result.Data;
+    }
+
+    private async Task<IReadOnlyList<LanProfileOpenApiVo>> GetNetworkProfiles(string siteId)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            $"{_controllerUrl}/openapi/v1/{_omadaId}/sites/{siteId}/lan-profiles?page=1&pageSize=100");
+
+        await AuthorizeRequest(request);
+
+        var response = await _httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<OperationResponseGridVoLanProfileOpenApiVo>();
+
+        if (result is null || result.ErrorCode != 0)
+        {
+            throw new Exception($"Failed to retrieve site network profile list from Omada Controller: {result?.Msg ?? "No result or message"}");
         }
 
         return result.Result.Data;
