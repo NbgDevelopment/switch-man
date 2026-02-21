@@ -15,6 +15,12 @@ public class OmadaControllerOptions
     public string ControllerUrl { get; set; } = "https://localhost:8043";
 
     /// <summary>
+    /// The Omada Id.
+    /// </summary>
+    [Required]
+    public string OmadaId { get; set; } = string.Empty;
+
+    /// <summary>
     /// Client ID for OAuth 2.0 authentication with Omada Controller OpenAPI.
     /// Get this from Settings > Platform Integration > Open API in the Omada Controller.
     /// </summary>
