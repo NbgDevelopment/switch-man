@@ -1,0 +1,3 @@
+﻿namespace NbgDev.SwitchMan.Switches.OmadaController.OmadaApi;
+
+internal record OperationResponseLanNetworkOpenApiGridVoLanNetworkQueryOpenApiVo(int ErrorCode, string Msg, LanNetworkOpenApiGridVoLanNetworkQueryOpenApiVo Result);

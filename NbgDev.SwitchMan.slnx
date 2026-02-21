@@ -1,4 +1,7 @@
 <Solution>
   <Project Path="NbgDev.SwitchMan.App.Tests/NbgDev.SwitchMan.App.Tests.csproj" />
   <Project Path="NbgDev.SwitchMan.App/NbgDev.SwitchMan.App.csproj" />
+  <Project Path="NbgDev.SwitchMan.Switches.Contract/NbgDev.SwitchMan.Switches.Contract.csproj" />
+  <Project Path="NbgDev.SwitchMan.Switches.OmadaController.Tests/NbgDev.SwitchMan.Switches.OmadaController.Tests.csproj" />
+  <Project Path="NbgDev.SwitchMan.Switches.OmadaController/NbgDev.SwitchMan.Switches.OmadaController.csproj" />
 </Solution>

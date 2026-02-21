@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NbgDev.SwitchMan.App.Models;
 using NbgDev.SwitchMan.App.Services;
+using NbgDev.SwitchMan.Switches.Contract;
 using Shouldly;
 
 namespace NbgDev.SwitchMan.App.Tests.Services;
@@ -9,6 +11,8 @@ namespace NbgDev.SwitchMan.App.Tests.Services;
 public class SwitchServiceTests
 {
     private IConfigurationService _mockConfigurationService = null!;
+    private ISwitchAccessService _mockSwitchAccessService = null!;
+    private ILogger<SwitchService> _mockLogger = null!;
     private SwitchService _switchService = null!;
 
     [SetUp]
@@ -16,7 +20,11 @@ public class SwitchServiceTests
     {
         _mockConfigurationService = Substitute.For<IConfigurationService>();
         _mockConfigurationService.LoadSwitches().Returns(new List<Switch>());
-        _switchService = new SwitchService(_mockConfigurationService);
+        
+        _mockSwitchAccessService = Substitute.For<ISwitchAccessService>();
+        _mockLogger = Substitute.For<ILogger<SwitchService>>();
+        
+        _switchService = new SwitchService(_mockConfigurationService, _mockSwitchAccessService, _mockLogger);
     }
 
     [Test]
@@ -30,9 +38,11 @@ public class SwitchServiceTests
         };
         var mockConfigService = Substitute.For<IConfigurationService>();
         mockConfigService.LoadSwitches().Returns(existingSwitches);
+        var mockSwitchAccess = Substitute.For<ISwitchAccessService>();
+        var mockLogger = Substitute.For<ILogger<SwitchService>>();
 
         // Act
-        var service = new SwitchService(mockConfigService);
+        var service = new SwitchService(mockConfigService, mockSwitchAccess, mockLogger);
         var switches = service.GetSwitches();
 
         // Assert
@@ -53,13 +63,15 @@ public class SwitchServiceTests
     }
 
     [Test]
-    public void AddSwitch_ShouldAddSwitchToCollection()
+    public async Task AddSwitchAsync_ShouldAddSwitchToCollection()
     {
         // Arrange
         var sw = new Switch("Core Switch", "10.0.0.1");
+        _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(sw.IpAddress).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>()));
 
         // Act
-        _switchService.AddSwitch(sw);
+        await _switchService.AddSwitchAsync(sw);
         var switches = _switchService.GetSwitches();
 
         // Assert
@@ -68,24 +80,28 @@ public class SwitchServiceTests
     }
 
     [Test]
-    public void AddSwitch_ShouldCallSaveSwitches()
+    public async Task AddSwitchAsync_ShouldCallSaveSwitches()
     {
         // Arrange
         var sw = new Switch("Edge Switch", "172.16.0.1");
+        _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(sw.IpAddress).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>()));
 
         // Act
-        _switchService.AddSwitch(sw);
+        await _switchService.AddSwitchAsync(sw);
 
         // Assert
         _mockConfigurationService.Received(1).SaveSwitches(Arg.Any<IEnumerable<Switch>>());
     }
 
     [Test]
-    public void RemoveSwitch_ShouldRemoveSwitchFromCollection()
+    public async Task RemoveSwitch_ShouldRemoveSwitchFromCollection()
     {
         // Arrange
         var sw = new Switch("ToRemove", "192.168.1.99");
-        _switchService.AddSwitch(sw);
+        _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(sw.IpAddress).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>()));
+        await _switchService.AddSwitchAsync(sw);
 
         // Act
         _switchService.RemoveSwitch(sw);
@@ -96,11 +112,13 @@ public class SwitchServiceTests
     }
 
     [Test]
-    public void RemoveSwitch_ShouldCallSaveSwitches()
+    public async Task RemoveSwitch_ShouldCallSaveSwitches()
     {
         // Arrange
         var sw = new Switch("ToRemove", "192.168.1.99");
-        _switchService.AddSwitch(sw);
+        _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(sw.IpAddress).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>()));
+        await _switchService.AddSwitchAsync(sw);
         _mockConfigurationService.ClearReceivedCalls();
 
         // Act
@@ -111,13 +129,15 @@ public class SwitchServiceTests
     }
 
     [Test]
-    public void MoveUp_ShouldMoveFirstSwitchUp_AndDoNothing()
+    public async Task MoveUp_ShouldMoveFirstSwitchUp_AndDoNothing()
     {
         // Arrange
         var sw1 = new Switch("Switch 1", "192.168.1.1");
         var sw2 = new Switch("Switch 2", "192.168.1.2");
-        _switchService.AddSwitch(sw1);
-        _switchService.AddSwitch(sw2);
+        _mockSwitchAccessService.GetPortCountAsync(Arg.Any<string>()).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(Arg.Any<string>()).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>()));
+        await _switchService.AddSwitchAsync(sw1);
+        await _switchService.AddSwitchAsync(sw2);
         _mockConfigurationService.ClearReceivedCalls();
 
         // Act
@@ -131,13 +151,15 @@ public class SwitchServiceTests
     }
 
     [Test]
-    public void MoveUp_ShouldMoveSecondSwitchToFirstPosition()
+    public async Task MoveUp_ShouldMoveSecondSwitchToFirstPosition()
     {
         // Arrange
         var sw1 = new Switch("Switch 1", "192.168.1.1");
         var sw2 = new Switch("Switch 2", "192.168.1.2");
-        _switchService.AddSwitch(sw1);
-        _switchService.AddSwitch(sw2);
+        _mockSwitchAccessService.GetPortCountAsync(Arg.Any<string>()).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(Arg.Any<string>()).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>()));
+        await _switchService.AddSwitchAsync(sw1);
+        await _switchService.AddSwitchAsync(sw2);
         _mockConfigurationService.ClearReceivedCalls();
 
         // Act
@@ -151,13 +173,15 @@ public class SwitchServiceTests
     }
 
     [Test]
-    public void MoveDown_ShouldMoveLastSwitchDown_AndDoNothing()
+    public async Task MoveDown_ShouldMoveLastSwitchDown_AndDoNothing()
     {
         // Arrange
         var sw1 = new Switch("Switch 1", "192.168.1.1");
         var sw2 = new Switch("Switch 2", "192.168.1.2");
-        _switchService.AddSwitch(sw1);
-        _switchService.AddSwitch(sw2);
+        _mockSwitchAccessService.GetPortCountAsync(Arg.Any<string>()).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(Arg.Any<string>()).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>()));
+        await _switchService.AddSwitchAsync(sw1);
+        await _switchService.AddSwitchAsync(sw2);
         _mockConfigurationService.ClearReceivedCalls();
 
         // Act
@@ -171,13 +195,15 @@ public class SwitchServiceTests
     }
 
     [Test]
-    public void MoveDown_ShouldMoveFirstSwitchToSecondPosition()
+    public async Task MoveDown_ShouldMoveFirstSwitchToSecondPosition()
     {
         // Arrange
         var sw1 = new Switch("Switch 1", "192.168.1.1");
         var sw2 = new Switch("Switch 2", "192.168.1.2");
-        _switchService.AddSwitch(sw1);
-        _switchService.AddSwitch(sw2);
+        _mockSwitchAccessService.GetPortCountAsync(Arg.Any<string>()).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(Arg.Any<string>()).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>()));
+        await _switchService.AddSwitchAsync(sw1);
+        await _switchService.AddSwitchAsync(sw2);
         _mockConfigurationService.ClearReceivedCalls();
 
         // Act
@@ -188,5 +214,53 @@ public class SwitchServiceTests
         switches[0].ShouldBe(sw2);
         switches[1].ShouldBe(sw1);
         _mockConfigurationService.Received(1).SaveSwitches(Arg.Any<IEnumerable<Switch>>());
+    }
+
+    [Test]
+    public async Task AddSwitchAsync_ShouldRetrievePortInformation()
+    {
+        // Arrange
+        var sw = new Switch("Test Switch", "192.168.1.100");
+        var portInfos = new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>
+        {
+            new(1, 10),
+            new(2, 20),
+            new(3, 10)
+        };
+        
+        _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(sw.IpAddress).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(portInfos));
+
+        // Act
+        await _switchService.AddSwitchAsync(sw);
+
+        // Assert
+        await _mockSwitchAccessService.Received(1).GetPortCountAsync(sw.IpAddress);
+        await _mockSwitchAccessService.Received(1).GetPortVlansAsync(sw.IpAddress);
+        _mockConfigurationService.Received(1).SaveSwitches(Arg.Any<IEnumerable<Switch>>());
+        
+        var switches = _switchService.GetSwitches();
+        switches.Count.ShouldBe(1);
+        switches.ShouldContain(s => s.Name == "Test Switch" && s.IpAddress == "192.168.1.100");
+    }
+
+    [Test]
+    public async Task AddSwitchAsync_ShouldLogPortVlanInformation()
+    {
+        // Arrange
+        var sw = new Switch("Logging Test Switch", "192.168.1.101");
+        var portInfos = new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>
+        {
+            new(1, 100)
+        };
+        
+        _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));
+        _mockSwitchAccessService.GetPortVlansAsync(sw.IpAddress).Returns(Task.FromResult<IEnumerable<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>>(portInfos));
+
+        // Act
+        await _switchService.AddSwitchAsync(sw);
+
+        // Assert - verify logger was called (we can't easily verify exact log messages with NSubstitute)
+        _mockLogger.ReceivedCalls().Count().ShouldBeGreaterThan(0);
     }
 }

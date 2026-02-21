@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NbgDev.SwitchMan.App\NbgDev.SwitchMan.App.csproj" />
+    <ProjectReference Include="..\NbgDev.SwitchMan.Switches.Contract\NbgDev.SwitchMan.Switches.Contract.csproj" />
   </ItemGroup>
 
 </Project>
