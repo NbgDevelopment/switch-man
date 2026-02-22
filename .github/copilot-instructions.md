@@ -91,7 +91,12 @@ NbgDev.SwitchMan.App/
 
 ## Building and Running
 
+**Important**: This project uses Nerdbank.GitVersioning, which requires a full (unshallowed) git history to calculate version numbers. Before building, always unshallow the repository:
+
 ```bash
+# Unshallow the repository (required for GitVersioning)
+git fetch --unshallow
+
 # Restore dependencies
 dotnet restore
 
@@ -130,6 +135,7 @@ The application is designed to run in Docker:
 - User authentication and authorization
 
 ## Troubleshooting
+- **GitVersioning build errors**: Run `git fetch --unshallow` to ensure the full git history is available. Nerdbank.GitVersioning requires an unshallowed repository to calculate version numbers.
 - **Build errors**: Ensure .NET 10 SDK is installed
 - **Service not found**: Check service registration in `Program.cs`
 - **Page not routing**: Verify `@page` directive is present
