@@ -25,17 +25,22 @@ This guide provides information for developers working on the Switch Man project
    cd switch-man
    ```
 
-2. Restore NuGet packages:
+2. Unshallow the repository (required for GitVersioning):
+   ```bash
+   git fetch --unshallow
+   ```
+
+3. Restore NuGet packages:
    ```bash
    dotnet restore
    ```
 
-3. Build the solution:
+4. Build the solution:
    ```bash
    dotnet build
    ```
 
-4. Run the application:
+5. Run the application:
    ```bash
    dotnet run --project NbgDev.SwitchMan.App
    ```
