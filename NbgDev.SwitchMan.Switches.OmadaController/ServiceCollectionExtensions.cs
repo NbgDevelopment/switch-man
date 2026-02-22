@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NbgDev.SwitchMan.Switches.Contract;
@@ -11,24 +10,13 @@ namespace NbgDev.SwitchMan.Switches.OmadaController;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds Omada Controller switch access service to the dependency injection container
+    /// Adds Omada Controller switch access service to the dependency injection container.
+    /// Configure <see cref="OmadaControllerOptions"/> separately via the options pattern.
     /// </summary>
     /// <param name="services">The service collection</param>
-    /// <param name="configuration">The configuration instance to bind options from</param>
     /// <returns>The service collection for chaining</returns>
-    public static IServiceCollection AddOmadaControllerSwitchAccess(
-        this IServiceCollection services, 
-        IConfiguration configuration)
+    public static IServiceCollection AddOmadaControllerSwitchAccess(this IServiceCollection services)
     {
-        // Configure options from configuration
-        services.Configure<OmadaControllerOptions>(
-            configuration.GetSection("OmadaController"));
-        
-        // Validate options on startup
-        services.AddOptions<OmadaControllerOptions>()
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        
         // Register HttpClient for the Omada Controller service
         services.AddHttpClient<OmadaControllerSwitchAccessService>(client =>
         {

@@ -9,10 +9,20 @@ public partial class Home
     [Inject]
     private SwitchService SwitchService { get; set; } = null!;
 
+    [Inject]
+    private IConfigurationService ConfigurationService { get; set; } = null!;
+
     private bool showAddDialog = false;
     private string switchName = string.Empty;
     private string ipAddress = string.Empty;
     private string errorMessage = string.Empty;
+    private bool omadaIsConfigured = false;
+
+    protected override void OnInitialized()
+    {
+        var omadaSettings = ConfigurationService.LoadOmadaSettings();
+        omadaIsConfigured = omadaSettings?.IsConfigured ?? false;
+    }
 
     private void OpenAddDialog()
     {

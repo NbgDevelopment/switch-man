@@ -1,9 +1,65 @@
 @page "/settings"
 @rendermode InteractiveServer
 
-<PageTitle>VLAN Settings</PageTitle>
+<PageTitle>Settings</PageTitle>
 
-<h1>VLAN Settings</h1>
+<h1>Settings</h1>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Omada Controller Configuration</h5>
+            </div>
+            <div class="card-body">
+                @if (omadaIsConfigured)
+                {
+                    <div class="alert alert-success mb-3">
+                        <span class="bi bi-check-circle me-2"></span>Omada Controller is configured.
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning mb-3">
+                        <span class="bi bi-exclamation-triangle me-2"></span>Omada Controller is not configured yet. Adding switches is disabled until configuration is complete.
+                    </div>
+                }
+                <div class="mb-3">
+                    <label for="omadaControllerUrl" class="form-label">Controller URL:</label>
+                    <input type="text" class="form-control" id="omadaControllerUrl" @bind="omadaControllerUrl" placeholder="https://omada.example.com:8043" />
+                    <div class="form-text">Only the protocol, hostname and optional port. Example: https://omada.example.com:8043</div>
+                </div>
+                <div class="mb-3">
+                    <label for="omadaId" class="form-label">Omada ID:</label>
+                    <input type="text" class="form-control" id="omadaId" @bind="omadaId" placeholder="Enter Omada ID" />
+                </div>
+                <div class="mb-3">
+                    <label for="omadaClientId" class="form-label">Client ID:</label>
+                    <input type="text" class="form-control" id="omadaClientId" @bind="omadaClientId" placeholder="Enter Client ID" />
+                </div>
+                <div class="mb-3">
+                    <label for="omadaClientSecret" class="form-label">Client Secret:</label>
+                    <input type="password" class="form-control" id="omadaClientSecret" @bind="omadaClientSecret" placeholder="Enter Client Secret" />
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="omadaAllowInvalidCertificate" @bind="omadaAllowInvalidCertificate" />
+                    <label class="form-check-label" for="omadaAllowInvalidCertificate">Allow invalid SSL certificate (e.g. self-signed)</label>
+                </div>
+                <button class="btn btn-primary" @onclick="SaveOmadaSettings">Save Configuration</button>
+                @if (!string.IsNullOrEmpty(omadaErrorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@omadaErrorMessage</div>
+                }
+                @if (!string.IsNullOrEmpty(omadaSuccessMessage))
+                {
+                    <div class="alert alert-success mt-3">@omadaSuccessMessage</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2>VLAN Settings</h2>
 
 <div class="row">
     <div class="col-md-6">

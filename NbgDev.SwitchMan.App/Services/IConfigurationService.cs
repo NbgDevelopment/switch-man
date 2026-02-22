@@ -8,4 +8,6 @@ public interface IConfigurationService
     void SaveConfiguration(IEnumerable<Vlan> vlans);
     List<Switch> LoadSwitches();
     void SaveSwitches(IEnumerable<Switch> switches);
+    OmadaSettings? LoadOmadaSettings();
+    void SaveOmadaSettings(OmadaSettings settings);
 }

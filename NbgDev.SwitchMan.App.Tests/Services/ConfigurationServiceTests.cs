@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -12,6 +13,7 @@ namespace NbgDev.SwitchMan.App.Tests.Services;
 public class ConfigurationServiceTests
 {
     private IConfiguration _mockConfiguration = null!;
+    private IDataProtectionProvider _dataProtectionProvider = null!;
     private ILogger<ConfigurationService> _mockLogger = null!;
     private string _testConfigPath = null!;
     private string _testConfigFilePath = null!;
@@ -21,6 +23,7 @@ public class ConfigurationServiceTests
     {
         _mockConfiguration = Substitute.For<IConfiguration>();
         _mockLogger = Substitute.For<ILogger<ConfigurationService>>();
+        _dataProtectionProvider = new EphemeralDataProtectionProvider();
         
         // Use a unique temp directory for each test
         _testConfigPath = Path.Combine(Path.GetTempPath(), $"switchman_test_{Guid.NewGuid()}");
@@ -43,7 +46,7 @@ public class ConfigurationServiceTests
     public void Constructor_ShouldCreateConfigDirectory()
     {
         // Act
-        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
 
         // Assert
         Directory.Exists(_testConfigPath).ShouldBeTrue();
@@ -57,14 +60,14 @@ public class ConfigurationServiceTests
         mockConfig.GetSection("SwitchMan:ConfigPath").Value.Returns((string?)null);
 
         // Act & Assert - should not throw
-        Should.NotThrow(() => new ConfigurationService(mockConfig, _mockLogger));
+        Should.NotThrow(() => new ConfigurationService(mockConfig, _dataProtectionProvider, _mockLogger));
     }
 
     [Test]
     public void LoadConfiguration_ShouldReturnEmptyList_WhenFileDoesNotExist()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
 
         // Act
         var vlans = service.LoadConfiguration();
@@ -78,7 +81,7 @@ public class ConfigurationServiceTests
     public void LoadConfiguration_ShouldReturnVlans_WhenFileExists()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var testVlans = new List<Vlan>
         {
             new Vlan("Management", 10),
@@ -101,7 +104,7 @@ public class ConfigurationServiceTests
     public void LoadConfiguration_ShouldReturnEmptyList_WhenFileIsCorrupted()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         File.WriteAllText(_testConfigFilePath, "invalid json content");
 
         // Act
@@ -116,7 +119,7 @@ public class ConfigurationServiceTests
     public void SaveConfiguration_ShouldCreateFile_WhenFileDoesNotExist()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var vlans = new List<Vlan>
         {
             new Vlan("Production", 100)
@@ -133,7 +136,7 @@ public class ConfigurationServiceTests
     public void SaveConfiguration_ShouldWriteCorrectJson()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var vlans = new List<Vlan>
         {
             new Vlan("Development", 50),
@@ -157,7 +160,7 @@ public class ConfigurationServiceTests
     public void SaveConfiguration_ShouldOverwriteExistingFile()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var initialVlans = new List<Vlan> { new Vlan("Initial", 1) };
         var updatedVlans = new List<Vlan> { new Vlan("Updated", 2) };
 
@@ -178,7 +181,7 @@ public class ConfigurationServiceTests
     public void SaveConfiguration_ShouldSaveEmptyList()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var vlans = new List<Vlan>();
 
         // Act
@@ -195,7 +198,7 @@ public class ConfigurationServiceTests
     public void LoadConfiguration_AfterSaveConfiguration_ShouldReturnSameVlans()
     {
         // Arrange
-        var service = new ConfigurationService(_mockConfiguration, _mockLogger);
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var originalVlans = new List<Vlan>
         {
             new Vlan("VLAN1", 10),
@@ -213,5 +216,92 @@ public class ConfigurationServiceTests
         {
             loadedVlans.ShouldContain(v => v.Name == original.Name && v.VlanId == original.VlanId);
         }
+    }
+
+    [Test]
+    public void LoadOmadaSettings_ShouldReturnNull_WhenFileDoesNotExist()
+    {
+        // Arrange
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
+
+        // Act
+        var settings = service.LoadOmadaSettings();
+
+        // Assert
+        settings.ShouldBeNull();
+    }
+
+    [Test]
+    public void SaveOmadaSettings_AndLoadOmadaSettings_ShouldRoundTrip()
+    {
+        // Arrange
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
+        var original = new OmadaSettings
+        {
+            ControllerUrl = "https://omada.example.com:8043",
+            OmadaId = "test-omada-id",
+            ClientId = "test-client-id",
+            ClientSecret = "super-secret-value",
+            AllowInvalidCertificate = true
+        };
+
+        // Act
+        service.SaveOmadaSettings(original);
+        var loaded = service.LoadOmadaSettings();
+
+        // Assert
+        loaded.ShouldNotBeNull();
+        loaded.ControllerUrl.ShouldBe(original.ControllerUrl);
+        loaded.OmadaId.ShouldBe(original.OmadaId);
+        loaded.ClientId.ShouldBe(original.ClientId);
+        loaded.ClientSecret.ShouldBe(original.ClientSecret);
+        loaded.AllowInvalidCertificate.ShouldBe(original.AllowInvalidCertificate);
+    }
+
+    [Test]
+    public void SaveOmadaSettings_ShouldEncryptClientSecret()
+    {
+        // Arrange
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
+        var settings = new OmadaSettings
+        {
+            ControllerUrl = "https://omada.example.com:8043",
+            OmadaId = "test-omada-id",
+            ClientId = "test-client-id",
+            ClientSecret = "my-secret",
+            AllowInvalidCertificate = false
+        };
+
+        // Act
+        service.SaveOmadaSettings(settings);
+
+        // Assert - file should not contain the plain-text secret
+        var omadaFilePath = Path.Combine(_testConfigPath, "omada.json");
+        var json = File.ReadAllText(omadaFilePath);
+        json.ShouldNotContain("my-secret");
+        json.ShouldContain("ProtectedClientSecret");
+    }
+
+    [Test]
+    public void LoadOmadaSettings_ShouldReturnIsConfiguredTrue_WhenAllFieldsSet()
+    {
+        // Arrange
+        var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
+        var settings = new OmadaSettings
+        {
+            ControllerUrl = "https://omada.example.com:8043",
+            OmadaId = "omada-id",
+            ClientId = "client-id",
+            ClientSecret = "secret",
+            AllowInvalidCertificate = false
+        };
+        service.SaveOmadaSettings(settings);
+
+        // Act
+        var loaded = service.LoadOmadaSettings();
+
+        // Assert
+        loaded.ShouldNotBeNull();
+        loaded.IsConfigured.ShouldBeTrue();
     }
 }
