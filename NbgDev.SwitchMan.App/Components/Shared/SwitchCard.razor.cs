@@ -55,11 +55,13 @@ public partial class SwitchCard
         }
     }
 
-    private void OnVlanSelectionChanged(PortInfo port, string selectedVlanId)
+    private async Task OnVlanSelectionChangedAsync(PortInfo port, string selectedVlanId)
     {
         var vlan = _vlans?.FirstOrDefault(v => v.Id == selectedVlanId);
         Logger.LogInformation(
             "VLAN selection changed for switch {SwitchName} port {PortNumber}: VLAN {VlanId} ({VlanName})",
             Switch.Name, port.PortNumber, selectedVlanId, vlan?.Name ?? string.Empty);
+
+        await SwitchAccessService.SetPortVlanAsync(Switch.IpAddress, port, selectedVlanId);
     }
 }
