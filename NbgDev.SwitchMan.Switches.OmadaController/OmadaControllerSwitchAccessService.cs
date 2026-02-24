@@ -128,6 +128,30 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
         }
     }
 
+    public async Task<IEnumerable<VlanInfo>> GetVlansAsync(string ipAddress)
+    {
+        try
+        {
+            _logger.LogInformation("Getting VLANs for switch at {IpAddress} via Omada Controller", ipAddress);
+
+            await EnsureAuthenticatedAsync();
+
+            // VLANs are site-wide in Omada; ipAddress is used for logging and interface consistency
+            var siteId = await GetSiteId();
+            var profiles = await GetNetworkProfiles(siteId);
+
+            var result = profiles.Select(p => new VlanInfo(p.Id, p.Name)).ToList();
+
+            _logger.LogInformation("Retrieved {Count} VLANs for switch at {IpAddress}", result.Count, ipAddress);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting VLANs for switch at {IpAddress}", ipAddress);
+            throw;
+        }
+    }
+
     private async Task EnsureAuthenticatedAsync()
     {
         // Check if we have a valid token

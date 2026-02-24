@@ -25,6 +25,7 @@
                         <tr>
                             <th scope="col">Port</th>
                             <th scope="col">VLAN</th>
+                            <th scope="col">New VLAN</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -33,6 +34,19 @@
                             <tr>
                                 <td>@port.PortNumber</td>
                                 <td>@port.VlanId (@port.VlanName)</td>
+                                <td>
+                                    <select class="form-select form-select-sm"
+                                            @onchange="e => OnVlanSelectionChanged(port, e.Value?.ToString() ?? string.Empty)">
+                                        <option value="">-- Select --</option>
+                                        @if (_vlans is not null)
+                                        {
+                                            @foreach (var vlan in _vlans)
+                                            {
+                                                <option value="@vlan.Id">@vlan.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                </td>
                             </tr>
                         }
                     </tbody>
