@@ -33,7 +33,7 @@ public partial class Settings
         }
     }
 
-    private static bool IsValidControllerUrl(string url)
+    internal static bool IsValidControllerUrl(string url)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
             return false;
