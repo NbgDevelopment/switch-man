@@ -68,6 +68,7 @@ jobs:
           cat > docker-compose.yml <<EOF
           services:
             switchman:
+              container_name: switchman
               image: ghcr.io/${{ steps.docker.outputs.repository }}:${{ steps.nbgv.outputs.version }}
               ports:
                 - "8080:8080"
