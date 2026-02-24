@@ -32,7 +32,7 @@
                         @foreach (var port in _ports)
                         {
                             <tr>
-                                <td>@port.PortNumber</td>
+                                <td>@port.PortNumber@(string.IsNullOrEmpty(port.PortName) ? "" : $" - {port.PortName}")</td>
                                 <td>@port.VlanId (@port.VlanName)</td>
                                 <td>
                                     <select class="form-select form-select-sm"

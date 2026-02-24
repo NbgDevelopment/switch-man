@@ -223,9 +223,9 @@ public class SwitchServiceTests
         var sw = new Switch("Test Switch", "192.168.1.100");
         var portInfos = new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>
         {
-            new(1, 10),
-            new(2, 20),
-            new(3, 10)
+            new(1, string.Empty, 10, string.Empty),
+            new(2, string.Empty, 20, string.Empty),
+            new(3, string.Empty, 10, string.Empty)
         };
         
         _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));
@@ -251,7 +251,7 @@ public class SwitchServiceTests
         var sw = new Switch("Logging Test Switch", "192.168.1.101");
         var portInfos = new List<NbgDev.SwitchMan.Switches.Contract.Models.PortInfo>
         {
-            new(1, 100)
+            new(1, string.Empty, 100, string.Empty)
         };
         
         _mockSwitchAccessService.GetPortCountAsync(sw.IpAddress).Returns(Task.FromResult(8));

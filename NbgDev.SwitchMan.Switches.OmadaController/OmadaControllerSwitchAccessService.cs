@@ -103,7 +103,7 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
                         var vlanId = network?.Vlan ?? 1; // Default to VLAN 1 if not found
                         var vlanName = network?.Name ?? string.Empty;
 
-                        portInfoList.Add(new PortInfo(portNumber, vlanId, vlanName));
+                        portInfoList.Add(new PortInfo(portNumber, port.Name, vlanId, vlanName));
                         _logger.LogDebug("Port {Port} on switch {IpAddress} is assigned to VLAN {VlanId}",
                             portNumber, ipAddress, vlanId);
                     }
@@ -112,7 +112,7 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
                         _logger.LogWarning(ex, "Could not get VLAN ID for port {Port} on switch {IpAddress}",
                             portNumber, ipAddress);
                         // Add default VLAN 1 if query fails
-                        portInfoList.Add(new PortInfo(portNumber, 1));
+                        portInfoList.Add(new PortInfo(portNumber, port.Name, 1, string.Empty));
                     }
                 }
             }
