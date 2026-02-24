@@ -22,6 +22,9 @@ public partial class SwitchCard
     [Inject]
     private ISwitchAccessService SwitchAccessService { get; set; } = null!;
 
+    [Inject]
+    private ILogger<SwitchCard> Logger { get; set; } = null!;
+
     private IEnumerable<PortInfo>? _ports;
     private bool _isLoading = true;
     private string? _loadError;
@@ -39,8 +42,9 @@ public partial class SwitchCard
         {
             _ports = await SwitchAccessService.GetPortVlansAsync(Switch.IpAddress);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Failed to load port information for switch {SwitchName} at {IpAddress}.", Switch.Name, Switch.IpAddress);
             _loadError = "Failed to load port information. Please try again.";
         }
         finally

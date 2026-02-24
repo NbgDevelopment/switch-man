@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using NbgDev.SwitchMan.App.Components;
 using NbgDev.SwitchMan.App.Services;
 using NbgDev.SwitchMan.Switches.OmadaController;
@@ -14,6 +15,9 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Add Data Protection for encrypting sensitive configuration values
+builder.Services.AddDataProtection();
+
 // Register Configuration service as singleton
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
 
@@ -24,7 +28,25 @@ builder.Services.AddSingleton<VlanService>();
 builder.Services.AddSingleton<SwitchService>();
 
 // Register switch access service
-builder.Services.AddOmadaControllerSwitchAccess(builder.Configuration);
+builder.Services.AddOmadaControllerSwitchAccess();
+
+// Configure OmadaControllerOptions from the settings file
+builder.Services.AddSingleton<IConfigureOptions<OmadaControllerOptions>>(sp =>
+{
+    var configService = sp.GetRequiredService<IConfigurationService>();
+    var omadaSettings = configService.LoadOmadaSettings();
+    return new ConfigureOptions<OmadaControllerOptions>(opts =>
+    {
+        if (omadaSettings is not null)
+        {
+            opts.ControllerUrl = omadaSettings.ControllerUrl;
+            opts.OmadaId = omadaSettings.OmadaId;
+            opts.ClientId = omadaSettings.ClientId;
+            opts.ClientSecret = omadaSettings.ClientSecret;
+            opts.AllowInvalidCertificate = omadaSettings.AllowInvalidCertificate;
+        }
+    });
+});
 
 var app = builder.Build();
 

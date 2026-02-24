@@ -8,10 +8,16 @@
         <div class="col-12">
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-3">
                 <h1 class="display-5 mb-0">Network Switches</h1>
-                <button class="btn btn-primary btn-lg" @onclick="OpenAddDialog">
+                <button class="btn btn-primary btn-lg" @onclick="OpenAddDialog" disabled="@(!omadaIsConfigured)" title="@(!omadaIsConfigured ? "Configure the Omada Controller in Settings first" : null)">
                     <span class="bi bi-plus-circle me-2"></span>Add Switch
                 </button>
             </div>
+            @if (!omadaIsConfigured)
+            {
+                <div class="alert alert-warning mt-3">
+                    <span class="bi bi-exclamation-triangle me-2"></span>Omada Controller is not configured. Please configure it in <a href="/settings">Settings</a> before adding switches.
+                </div>
+            }
         </div>
     </div>
 

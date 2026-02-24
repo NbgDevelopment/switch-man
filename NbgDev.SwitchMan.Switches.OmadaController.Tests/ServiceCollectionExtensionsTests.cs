@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NbgDev.SwitchMan.Switches.Contract;
 using Shouldly;
@@ -8,31 +7,15 @@ namespace NbgDev.SwitchMan.Switches.OmadaController.Tests;
 [TestFixture]
 public class ServiceCollectionExtensionsTests
 {
-    private IConfiguration GetMockConfiguration()
-    {
-        var inMemorySettings = new Dictionary<string, string?>
-        {
-            {"OmadaController:ControllerUrl", "https://localhost:8043"},
-            {"OmadaController:OmadaId", "test-omada-id"},
-            {"OmadaController:ClientId", "test-client-id"},
-            {"OmadaController:ClientSecret", "test-client-secret"}
-        };
-
-        return new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
-    }
-
     [Test]
     public void AddOmadaControllerSwitchAccess_ShouldRegisterISwitchAccessService()
     {
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging(); // Add logging to satisfy dependency
-        var configuration = GetMockConfiguration();
 
         // Act
-        services.AddOmadaControllerSwitchAccess(configuration);
+        services.AddOmadaControllerSwitchAccess();
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -46,10 +29,9 @@ public class ServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var configuration = GetMockConfiguration();
 
         // Act
-        var result = services.AddOmadaControllerSwitchAccess(configuration);
+        var result = services.AddOmadaControllerSwitchAccess();
 
         // Assert
         result.ShouldBe(services);
@@ -61,40 +43,13 @@ public class ServiceCollectionExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
-        var configuration = GetMockConfiguration();
 
         // Act
-        services.AddOmadaControllerSwitchAccess(configuration);
+        services.AddOmadaControllerSwitchAccess();
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert - HttpClient should be resolvable through the service
         var service = serviceProvider.GetService<OmadaControllerSwitchAccessService>();
-        service.ShouldNotBeNull();
-    }
-    
-    [Test]
-    public void AddOmadaControllerSwitchAccess_ShouldBindConfigurationToOptions()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        services.AddLogging();
-        var inMemorySettings = new Dictionary<string, string?>
-        {
-            {"OmadaController:ControllerUrl", "https://custom.example.com:8043"},
-            {"OmadaController:OmadaId", "custom-omada-id"},
-            {"OmadaController:ClientId", "custom-client-id"},
-            {"OmadaController:ClientSecret", "custom-secret"}
-        };
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
-
-        // Act
-        services.AddOmadaControllerSwitchAccess(configuration);
-        var serviceProvider = services.BuildServiceProvider();
-
-        // Assert - Options should be configured from the configuration
-        var service = serviceProvider.GetService<ISwitchAccessService>();
         service.ShouldNotBeNull();
     }
     
@@ -104,20 +59,17 @@ public class ServiceCollectionExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
-        var inMemorySettings = new Dictionary<string, string?>
+        services.Configure<OmadaControllerOptions>(opts =>
         {
-            {"OmadaController:ControllerUrl", "https://localhost:8043"},
-            {"OmadaController:OmadaId", "test-omada-id"},
-            {"OmadaController:ClientId", "test-client-id"},
-            {"OmadaController:ClientSecret", "test-secret"},
-            {"OmadaController:AllowInvalidCertificate", "false"}
-        };
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
+            opts.ControllerUrl = "https://localhost:8043";
+            opts.OmadaId = "test-omada-id";
+            opts.ClientId = "test-client-id";
+            opts.ClientSecret = "test-secret";
+            opts.AllowInvalidCertificate = false;
+        });
 
         // Act
-        services.AddOmadaControllerSwitchAccess(configuration);
+        services.AddOmadaControllerSwitchAccess();
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert - Service should be registered (certificate validation enabled by default)
@@ -131,20 +83,17 @@ public class ServiceCollectionExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
-        var inMemorySettings = new Dictionary<string, string?>
+        services.Configure<OmadaControllerOptions>(opts =>
         {
-            {"OmadaController:ControllerUrl", "https://localhost:8043"},
-            {"OmadaController:OmadaId", "test-omada-id"},
-            {"OmadaController:ClientId", "test-client-id"},
-            {"OmadaController:ClientSecret", "test-secret"},
-            {"OmadaController:AllowInvalidCertificate", "true"}
-        };
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
+            opts.ControllerUrl = "https://localhost:8043";
+            opts.OmadaId = "test-omada-id";
+            opts.ClientId = "test-client-id";
+            opts.ClientSecret = "test-secret";
+            opts.AllowInvalidCertificate = true;
+        });
 
         // Act
-        services.AddOmadaControllerSwitchAccess(configuration);
+        services.AddOmadaControllerSwitchAccess();
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert - Service should be registered with certificate validation bypassed
