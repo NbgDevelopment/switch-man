@@ -13,7 +13,6 @@ public class ConfigurationService : IConfigurationService
         WriteIndented = true
     };
 
-    private readonly string _configFilePath;
     private readonly string _switchesFilePath;
     private readonly string _omadaFilePath;
     private readonly IDataProtector _dataProtector;
@@ -38,49 +37,10 @@ public class ConfigurationService : IConfigurationService
             throw new InvalidOperationException($"Failed to create configuration directory at '{configPath}'. Please check permissions.", ex);
         }
         
-        _configFilePath = Path.Combine(configPath, "vlans.json");
         _switchesFilePath = Path.Combine(configPath, "switches.json");
         _omadaFilePath = Path.Combine(configPath, "omada.json");
-        _logger.LogInformation("Configuration file path: {ConfigFilePath}", _configFilePath);
         _logger.LogInformation("Switches file path: {SwitchesFilePath}", _switchesFilePath);
         _logger.LogInformation("Omada settings file path: {OmadaFilePath}", _omadaFilePath);
-    }
-
-    public List<Vlan> LoadConfiguration()
-    {
-        try
-        {
-            if (!File.Exists(_configFilePath))
-            {
-                _logger.LogInformation("Configuration file not found. Starting with empty configuration.");
-                return new List<Vlan>();
-            }
-
-            var json = File.ReadAllText(_configFilePath);
-            var vlans = JsonSerializer.Deserialize<List<Vlan>>(json) ?? new List<Vlan>();
-            _logger.LogInformation("Loaded {Count} VLANs from configuration file.", vlans.Count);
-            return vlans;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error loading configuration file. Starting with empty configuration.");
-            return new List<Vlan>();
-        }
-    }
-
-    public void SaveConfiguration(IEnumerable<Vlan> vlans)
-    {
-        try
-        {
-            var json = JsonSerializer.Serialize(vlans, JsonOptions);
-            File.WriteAllText(_configFilePath, json);
-            _logger.LogInformation("Saved {Count} VLANs to configuration file.", vlans.Count());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to save VLAN configuration to file.");
-            throw new InvalidOperationException("Failed to save VLAN configuration. Please check file permissions and disk space.", ex);
-        }
     }
 
     public List<Switch> LoadSwitches()
