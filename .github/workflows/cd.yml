@@ -71,7 +71,7 @@ jobs:
               container_name: switchman
               image: ghcr.io/${{ steps.docker.outputs.repository }}:${{ steps.nbgv.outputs.version }}
               ports:
-                - "8080:8080"
+                - "18080:8080"
               restart: unless-stopped
           EOF
 
