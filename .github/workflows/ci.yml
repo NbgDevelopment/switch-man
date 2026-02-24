@@ -31,3 +31,6 @@ jobs:
 
       - name: Test
         run: dotnet test NbgDev.SwitchMan.slnx --no-build --configuration Release --verbosity normal
+
+      - name: Build Docker image
+        run: docker build -t switchman:ci .

@@ -206,6 +206,8 @@ docker stop switchman
 docker rm switchman
 ```
 
+> **Pull Request Requirement**: Before submitting or merging a pull request, always verify that the Docker image still builds successfully by running `docker build -t switchman:latest .` from the repository root. The CI workflow also automatically checks the Docker build on every push.
+
 ## Testing
 
 ### Manual Testing Checklist

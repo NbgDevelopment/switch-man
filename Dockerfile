@@ -2,13 +2,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source
 
-# Copy the project file and restore dependencies
+# Copy project files and restore dependencies
+COPY NbgDev.SwitchMan.Switches.Contract/*.csproj ./NbgDev.SwitchMan.Switches.Contract/
+COPY NbgDev.SwitchMan.Switches.OmadaController/*.csproj ./NbgDev.SwitchMan.Switches.OmadaController/
 COPY NbgDev.SwitchMan.App/*.csproj ./NbgDev.SwitchMan.App/
-WORKDIR /source/NbgDev.SwitchMan.App
-RUN dotnet restore
+RUN dotnet restore ./NbgDev.SwitchMan.App/NbgDev.SwitchMan.App.csproj
 
 # Copy the rest of the application code
-WORKDIR /source
+COPY NbgDev.SwitchMan.Switches.Contract/. ./NbgDev.SwitchMan.Switches.Contract/
+COPY NbgDev.SwitchMan.Switches.OmadaController/. ./NbgDev.SwitchMan.Switches.OmadaController/
 COPY NbgDev.SwitchMan.App/. ./NbgDev.SwitchMan.App/
 
 # Build and publish the application
