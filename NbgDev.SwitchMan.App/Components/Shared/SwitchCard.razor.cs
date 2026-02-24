@@ -26,6 +26,7 @@ public partial class SwitchCard
     private ILogger<SwitchCard> Logger { get; set; } = null!;
 
     private IEnumerable<PortInfo>? _ports;
+    private IEnumerable<VlanInfo>? _vlans;
     private bool _isLoading = true;
     private string? _loadError;
 
@@ -41,6 +42,7 @@ public partial class SwitchCard
         try
         {
             _ports = await SwitchAccessService.GetPortVlansAsync(Switch.IpAddress);
+            _vlans = await SwitchAccessService.GetVlansAsync(Switch.IpAddress);
         }
         catch (Exception ex)
         {
@@ -51,5 +53,13 @@ public partial class SwitchCard
         {
             _isLoading = false;
         }
+    }
+
+    private void OnVlanSelectionChanged(PortInfo port, string selectedVlanId)
+    {
+        var vlan = _vlans?.FirstOrDefault(v => v.Id == selectedVlanId);
+        Logger.LogInformation(
+            "VLAN selection changed for switch {SwitchName} port {PortNumber}: VLAN {VlanId} ({VlanName})",
+            Switch.Name, port.PortNumber, selectedVlanId, vlan?.Name ?? string.Empty);
     }
 }

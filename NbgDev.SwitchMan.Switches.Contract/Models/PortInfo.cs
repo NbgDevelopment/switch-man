@@ -9,6 +9,11 @@ public class PortInfo
     /// Port number (1-based)
     /// </summary>
     public int PortNumber { get; set; }
+
+    /// <summary>
+    /// Port name
+    /// </summary>
+    public string PortName { get; set; } = string.Empty;
     
     /// <summary>
     /// VLAN ID assigned to this port
@@ -24,15 +29,10 @@ public class PortInfo
     {
     }
 
-    public PortInfo(int portNumber, int vlanId)
+    public PortInfo(int portNumber, string portName, int vlanId, string vlanName)
     {
         PortNumber = portNumber;
-        VlanId = vlanId;
-    }
-
-    public PortInfo(int portNumber, int vlanId, string vlanName)
-    {
-        PortNumber = portNumber;
+        PortName = portName;
         VlanId = vlanId;
         VlanName = vlanName;
     }

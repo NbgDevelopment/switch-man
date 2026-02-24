@@ -103,7 +103,7 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
                         var vlanId = network?.Vlan ?? 1; // Default to VLAN 1 if not found
                         var vlanName = network?.Name ?? string.Empty;
 
-                        portInfoList.Add(new PortInfo(portNumber, vlanId, vlanName));
+                        portInfoList.Add(new PortInfo(portNumber, port.Name, vlanId, vlanName));
                         _logger.LogDebug("Port {Port} on switch {IpAddress} is assigned to VLAN {VlanId}",
                             portNumber, ipAddress, vlanId);
                     }
@@ -112,7 +112,7 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
                         _logger.LogWarning(ex, "Could not get VLAN ID for port {Port} on switch {IpAddress}",
                             portNumber, ipAddress);
                         // Add default VLAN 1 if query fails
-                        portInfoList.Add(new PortInfo(portNumber, 1));
+                        portInfoList.Add(new PortInfo(portNumber, port.Name, 1, string.Empty));
                     }
                 }
             }
@@ -124,6 +124,30 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting port VLAN information for switch at {IpAddress}", ipAddress);
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<VlanInfo>> GetVlansAsync(string ipAddress)
+    {
+        try
+        {
+            _logger.LogInformation("Getting VLANs for switch at {IpAddress} via Omada Controller", ipAddress);
+
+            await EnsureAuthenticatedAsync();
+
+            // VLANs are site-wide in Omada; ipAddress is used for logging and interface consistency
+            var siteId = await GetSiteId();
+            var profiles = await GetNetworkProfiles(siteId);
+
+            var result = profiles.Select(p => new VlanInfo(p.Id, p.Name)).ToList();
+
+            _logger.LogInformation("Retrieved {Count} VLANs for switch at {IpAddress}", result.Count, ipAddress);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting VLANs for switch at {IpAddress}", ipAddress);
             throw;
         }
     }
