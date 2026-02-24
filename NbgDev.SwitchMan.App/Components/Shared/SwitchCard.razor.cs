@@ -57,11 +57,19 @@ public partial class SwitchCard
 
     private async Task OnVlanSelectionChangedAsync(PortInfo port, string selectedVlanId)
     {
-        var vlan = _vlans?.FirstOrDefault(v => v.Id == selectedVlanId);
-        Logger.LogInformation(
-            "VLAN selection changed for switch {SwitchName} port {PortNumber}: VLAN {VlanId} ({VlanName})",
-            Switch.Name, port.PortNumber, selectedVlanId, vlan?.Name ?? string.Empty);
+        try
+        {
+            var vlan = _vlans?.FirstOrDefault(v => v.Id == selectedVlanId);
+            Logger.LogInformation(
+                "VLAN selection changed for switch {SwitchName} port {PortNumber}: VLAN {VlanId} ({VlanName})",
+                Switch.Name, port.PortNumber, selectedVlanId, vlan?.Name ?? string.Empty);
 
-        await SwitchAccessService.SetPortVlanAsync(Switch.IpAddress, port, selectedVlanId);
+            await SwitchAccessService.SetPortVlanAsync(Switch.IpAddress, port, selectedVlanId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to set VLAN for port {PortNumber} on switch {SwitchName} at {IpAddress}.", port.PortNumber, Switch.Name, Switch.IpAddress);
+            _loadError = "Failed to set VLAN for port. Please try again.";
+        }
     }
 }
