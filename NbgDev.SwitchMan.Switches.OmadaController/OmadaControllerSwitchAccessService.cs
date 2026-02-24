@@ -128,6 +128,49 @@ public class OmadaControllerSwitchAccessService : ISwitchAccessService
         }
     }
 
+    public async Task SetPortVlanAsync(string ipAddress, PortInfo port, string vlanId)
+    {
+        try
+        {
+            _logger.LogInformation("Setting VLAN {VlanId} for port {Port} on switch at {IpAddress} via Omada Controller",
+                vlanId, port.PortNumber, ipAddress);
+
+            // Ensure we're authenticated
+            await EnsureAuthenticatedAsync();
+
+            var siteId = await GetSiteId();
+
+            // Get switch port configuration from Omada Controller
+            var switchInfo = await GetSwitchInfoAsync(IPAddress.Parse(ipAddress));
+
+            if (switchInfo is null)
+            {
+                throw new Exception($"Switch with IP {ipAddress} not found in Omada Controller");
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Put,
+                $"{_controllerUrl}/openapi/v1/{_omadaId}/sites/{siteId}/switches/{switchInfo.Mac}/ports/{port.PortNumber}/profile");
+
+            request.Content = JsonContent.Create(new SwitchProfileId(vlanId));
+            await AuthorizeRequest(request);
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<OperationResponseWithoutResult>();
+
+            if (result is null || result.ErrorCode != 0)
+            {
+                throw new Exception($"Failed to set port VLAN on Omada Controller: {result?.Msg ?? "No result or message"}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error setting port VLAN for switch at {IpAddress} and port {Port}", ipAddress, port.PortNumber);
+            throw;
+        }
+    }
+
     public async Task<IEnumerable<VlanInfo>> GetVlansAsync(string ipAddress)
     {
         try

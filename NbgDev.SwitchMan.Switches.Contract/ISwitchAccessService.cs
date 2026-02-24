@@ -22,6 +22,15 @@ public interface ISwitchAccessService
     Task<IEnumerable<PortInfo>> GetPortVlansAsync(string ipAddress);
 
     /// <summary>
+    /// Sets VLAN for a switch port.
+    /// </summary>
+    /// <param name="ipAddress">IP address of the switch</param>
+    /// <param name="port">Port information</param>
+    /// <param name="vlanId">VLAN ID</param>
+    /// <returns></returns>
+    Task SetPortVlanAsync(string ipAddress, PortInfo port, string vlanId);
+
+    /// <summary>
     /// Gets all available VLANs from the switch controller
     /// </summary>
     /// <param name="ipAddress">IP address of the switch</param>
