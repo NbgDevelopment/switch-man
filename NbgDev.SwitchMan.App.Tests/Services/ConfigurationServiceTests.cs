@@ -84,8 +84,8 @@ public class ConfigurationServiceTests
         var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var testVlans = new List<Vlan>
         {
-            new Vlan("Management", 10),
-            new Vlan("Guest", 20)
+            new Vlan("Management"),
+            new Vlan("Guest")
         };
         
         var json = JsonSerializer.Serialize(testVlans, new JsonSerializerOptions { WriteIndented = true });
@@ -96,8 +96,8 @@ public class ConfigurationServiceTests
 
         // Assert
         vlans.Count.ShouldBe(2);
-        vlans.ShouldContain(v => v.Name == "Management" && v.VlanId == 10);
-        vlans.ShouldContain(v => v.Name == "Guest" && v.VlanId == 20);
+        vlans.ShouldContain(v => v.Name == "Management");
+        vlans.ShouldContain(v => v.Name == "Guest");
     }
 
     [Test]
@@ -122,7 +122,7 @@ public class ConfigurationServiceTests
         var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var vlans = new List<Vlan>
         {
-            new Vlan("Production", 100)
+            new Vlan("Production")
         };
 
         // Act
@@ -139,8 +139,8 @@ public class ConfigurationServiceTests
         var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var vlans = new List<Vlan>
         {
-            new Vlan("Development", 50),
-            new Vlan("Testing", 60)
+            new Vlan("Development"),
+            new Vlan("Testing")
         };
 
         // Act
@@ -152,8 +152,8 @@ public class ConfigurationServiceTests
         
         loadedVlans.ShouldNotBeNull();
         loadedVlans.Count.ShouldBe(2);
-        loadedVlans.ShouldContain(v => v.Name == "Development" && v.VlanId == 50);
-        loadedVlans.ShouldContain(v => v.Name == "Testing" && v.VlanId == 60);
+        loadedVlans.ShouldContain(v => v.Name == "Development");
+        loadedVlans.ShouldContain(v => v.Name == "Testing");
     }
 
     [Test]
@@ -161,8 +161,8 @@ public class ConfigurationServiceTests
     {
         // Arrange
         var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
-        var initialVlans = new List<Vlan> { new Vlan("Initial", 1) };
-        var updatedVlans = new List<Vlan> { new Vlan("Updated", 2) };
+        var initialVlans = new List<Vlan> { new Vlan("Initial") };
+        var updatedVlans = new List<Vlan> { new Vlan("Updated") };
 
         // Act
         service.SaveConfiguration(initialVlans);
@@ -174,7 +174,7 @@ public class ConfigurationServiceTests
         
         loadedVlans.ShouldNotBeNull();
         loadedVlans.Count.ShouldBe(1);
-        loadedVlans.ShouldContain(v => v.Name == "Updated" && v.VlanId == 2);
+        loadedVlans.ShouldContain(v => v.Name == "Updated");
     }
 
     [Test]
@@ -201,9 +201,9 @@ public class ConfigurationServiceTests
         var service = new ConfigurationService(_mockConfiguration, _dataProtectionProvider, _mockLogger);
         var originalVlans = new List<Vlan>
         {
-            new Vlan("VLAN1", 10),
-            new Vlan("VLAN2", 20),
-            new Vlan("VLAN3", 30)
+            new Vlan("VLAN1"),
+            new Vlan("VLAN2"),
+            new Vlan("VLAN3")
         };
 
         // Act
@@ -214,7 +214,7 @@ public class ConfigurationServiceTests
         loadedVlans.Count.ShouldBe(3);
         foreach (var original in originalVlans)
         {
-            loadedVlans.ShouldContain(v => v.Name == original.Name && v.VlanId == original.VlanId);
+            loadedVlans.ShouldContain(v => v.Name == original.Name);
         }
     }
 

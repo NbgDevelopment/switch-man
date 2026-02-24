@@ -25,8 +25,8 @@ public class VlanServiceTests
         // Arrange
         var existingVlans = new List<Vlan>
         {
-            new Vlan("Management", 10),
-            new Vlan("Guest", 20)
+            new Vlan("Management"),
+            new Vlan("Guest")
         };
         var mockConfigService = Substitute.For<IConfigurationService>();
         mockConfigService.LoadConfiguration().Returns(existingVlans);
@@ -37,8 +37,8 @@ public class VlanServiceTests
 
         // Assert
         vlans.Count.ShouldBe(2);
-        vlans.ShouldContain(v => v.Name == "Management" && v.VlanId == 10);
-        vlans.ShouldContain(v => v.Name == "Guest" && v.VlanId == 20);
+        vlans.ShouldContain(v => v.Name == "Management");
+        vlans.ShouldContain(v => v.Name == "Guest");
     }
 
     [Test]
@@ -56,7 +56,7 @@ public class VlanServiceTests
     public void AddVlan_ShouldAddVlanToCollection()
     {
         // Arrange
-        var vlan = new Vlan("Production", 100);
+        var vlan = new Vlan("Production");
 
         // Act
         _vlanService.AddVlan(vlan);
@@ -64,14 +64,14 @@ public class VlanServiceTests
 
         // Assert
         vlans.Count.ShouldBe(1);
-        vlans.ShouldContain(v => v.Name == "Production" && v.VlanId == 100);
+        vlans.ShouldContain(v => v.Name == "Production");
     }
 
     [Test]
     public void AddVlan_ShouldCallSaveConfiguration()
     {
         // Arrange
-        var vlan = new Vlan("Development", 50);
+        var vlan = new Vlan("Development");
 
         // Act
         _vlanService.AddVlan(vlan);
@@ -81,25 +81,10 @@ public class VlanServiceTests
     }
 
     [Test]
-    public void AddVlan_ShouldThrowException_WhenVlanIdAlreadyExists()
-    {
-        // Arrange
-        var vlan1 = new Vlan("VLAN1", 100);
-        var vlan2 = new Vlan("VLAN2", 100); // Same VLAN ID
-
-        // Act
-        _vlanService.AddVlan(vlan1);
-
-        // Assert
-        Should.Throw<InvalidOperationException>(() => _vlanService.AddVlan(vlan2))
-            .Message.ShouldBe("A VLAN with ID 100 already exists.");
-    }
-
-    [Test]
     public void RemoveVlan_ShouldRemoveVlanFromCollection()
     {
         // Arrange
-        var vlan = new Vlan("ToRemove", 200);
+        var vlan = new Vlan("ToRemove");
         _vlanService.AddVlan(vlan);
 
         // Act
@@ -114,7 +99,7 @@ public class VlanServiceTests
     public void RemoveVlan_ShouldCallSaveConfiguration()
     {
         // Arrange
-        var vlan = new Vlan("ToRemove", 200);
+        var vlan = new Vlan("ToRemove");
         _vlanService.AddVlan(vlan);
         _mockConfigurationService.ClearReceivedCalls();
 
@@ -129,8 +114,8 @@ public class VlanServiceTests
     public void UpdateVlan_ShouldUpdateVlanInCollection()
     {
         // Arrange
-        var oldVlan = new Vlan("OldName", 300);
-        var newVlan = new Vlan("NewName", 300);
+        var oldVlan = new Vlan("OldName");
+        var newVlan = new Vlan("NewName");
         _vlanService.AddVlan(oldVlan);
 
         // Act
@@ -139,62 +124,15 @@ public class VlanServiceTests
 
         // Assert
         vlans.Count.ShouldBe(1);
-        vlans.ShouldContain(v => v.Name == "NewName" && v.VlanId == 300);
-    }
-
-    [Test]
-    public void UpdateVlan_ShouldUpdateVlanIdWhenNotDuplicate()
-    {
-        // Arrange
-        var oldVlan = new Vlan("VLAN", 300);
-        var newVlan = new Vlan("VLAN", 400);
-        _vlanService.AddVlan(oldVlan);
-
-        // Act
-        _vlanService.UpdateVlan(oldVlan, newVlan);
-        var vlans = _vlanService.GetVlans();
-
-        // Assert
-        vlans.Count.ShouldBe(1);
-        vlans.ShouldContain(v => v.VlanId == 400);
-    }
-
-    [Test]
-    public void UpdateVlan_ShouldThrowException_WhenNewVlanIdAlreadyExists()
-    {
-        // Arrange
-        var vlan1 = new Vlan("VLAN1", 100);
-        var vlan2 = new Vlan("VLAN2", 200);
-        _vlanService.AddVlan(vlan1);
-        _vlanService.AddVlan(vlan2);
-
-        var updatedVlan = new Vlan("VLAN1_Updated", 200); // Trying to change to existing VLAN ID
-
-        // Assert
-        Should.Throw<InvalidOperationException>(() => _vlanService.UpdateVlan(vlan1, updatedVlan))
-            .Message.ShouldBe("A VLAN with ID 200 already exists.");
-    }
-
-    [Test]
-    public void UpdateVlan_ShouldNotThrowException_WhenVlanIdRemainsTheSame()
-    {
-        // Arrange
-        var oldVlan = new Vlan("OldName", 100);
-        var newVlan = new Vlan("NewName", 100); // Same VLAN ID
-        _vlanService.AddVlan(oldVlan);
-
-        // Act & Assert
-        Should.NotThrow(() => _vlanService.UpdateVlan(oldVlan, newVlan));
-        var vlans = _vlanService.GetVlans();
-        vlans.ShouldContain(v => v.Name == "NewName" && v.VlanId == 100);
+        vlans.ShouldContain(v => v.Name == "NewName");
     }
 
     [Test]
     public void UpdateVlan_ShouldCallSaveConfiguration()
     {
         // Arrange
-        var oldVlan = new Vlan("OldName", 300);
-        var newVlan = new Vlan("NewName", 300);
+        var oldVlan = new Vlan("OldName");
+        var newVlan = new Vlan("NewName");
         _vlanService.AddVlan(oldVlan);
         _mockConfigurationService.ClearReceivedCalls();
 
@@ -209,8 +147,8 @@ public class VlanServiceTests
     public void UpdateVlan_ShouldDoNothing_WhenOldVlanNotFound()
     {
         // Arrange
-        var oldVlan = new Vlan("NonExistent", 999);
-        var newVlan = new Vlan("NewName", 999);
+        var oldVlan = new Vlan("NonExistent");
+        var newVlan = new Vlan("NewName");
 
         // Act
         _vlanService.UpdateVlan(oldVlan, newVlan);

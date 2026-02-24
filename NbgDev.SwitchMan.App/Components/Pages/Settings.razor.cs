@@ -13,7 +13,6 @@ public partial class Settings
     private IConfigurationService ConfigurationService { get; set; } = null!;
 
     private string vlanName = string.Empty;
-    private int vlanId;
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
 
@@ -129,20 +128,13 @@ public partial class Settings
             return;
         }
 
-        if (vlanId < 1 || vlanId > 4094)
-        {
-            errorMessage = "VLAN ID must be between 1 and 4094.";
-            return;
-        }
-
         try
         {
-            var vlan = new Vlan(vlanName, vlanId);
+            var vlan = new Vlan(vlanName);
             VlanService.AddVlan(vlan);
 
-            successMessage = $"VLAN '{vlanName}' (ID: {vlanId}) added successfully.";
+            successMessage = $"VLAN '{vlanName}' added successfully.";
             vlanName = string.Empty;
-            vlanId = 0;
         }
         catch (InvalidOperationException ex)
         {
