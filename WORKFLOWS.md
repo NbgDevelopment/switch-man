@@ -40,9 +40,11 @@ The CD workflow builds a Docker image and publishes it to GitHub Container Regis
 7. Pushes the image with two tags:
    - Semantic version (e.g., `1.0.3`)
    - `latest`
+8. Generates a `docker-compose.yml` file referencing the versioned image *(main branch only)*
+9. Creates a GitHub release tagged `v<version>` with the `docker-compose.yml` as an asset *(main branch only)*
 
 **Permissions Required:**
-- `contents: read` - Already available by default
+- `contents: write` - Required to create GitHub releases
 - `packages: write` - Already available by default for GITHUB_TOKEN
 
 ## Running Workflows Manually
@@ -118,6 +120,33 @@ docker run -d -p 8080:8080 ghcr.io/nbgdevelopment/switch-man:latest
 
 **Note:** For public repositories, the images are publicly accessible and don't require authentication to pull.
 
+## GitHub Releases
+
+Each push to `main` creates a GitHub release tagged `v<version>` (e.g., `v1.0.3`).
+
+### Release Assets
+
+Each release includes a `docker-compose.yml` file that can be used to run the exact version of Switch Man that was released:
+
+```bash
+# Download the docker-compose.yml for a specific release
+curl -LO https://github.com/NbgDevelopment/switch-man/releases/download/v1.0.3/docker-compose.yml
+
+# Start the container
+docker compose up -d
+```
+
+The generated `docker-compose.yml` looks like:
+
+```yaml
+services:
+  switchman:
+    image: ghcr.io/nbgdevelopment/switch-man:1.0.3
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+```
+
 ## Troubleshooting
 
 ### CI Workflow Fails
@@ -130,6 +159,7 @@ docker run -d -p 8080:8080 ghcr.io/nbgdevelopment/switch-man:latest
 - **GitVersioning errors:** Ensure `version.json` exists and is valid JSON
 - **Docker build errors:** Check the Dockerfile and build context
 - **Push permission errors:** Ensure the workflow has `packages: write` permission (already configured)
+- **Release creation errors:** Ensure the workflow has `contents: write` permission (already configured). A release for the same version tag may already exist if the workflow was re-run.
 
 ### Manual Workflow Doesn't Appear
 
