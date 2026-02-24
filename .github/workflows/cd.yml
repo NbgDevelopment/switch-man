@@ -73,6 +73,12 @@ jobs:
               ports:
                 - "18080:8080"
               restart: unless-stopped
+              environment:
+                - SwitchMan__ConfigPath=/data/config
+              volumes:
+                - switchman_config:/data/config
+          volumes:
+            switchman_config:
           EOF
 
       - name: Create GitHub release
