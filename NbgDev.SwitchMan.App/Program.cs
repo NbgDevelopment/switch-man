@@ -21,9 +21,6 @@ builder.Services.AddDataProtection();
 // Register Configuration service as singleton
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
 
-// Register VLAN service as singleton
-builder.Services.AddSingleton<VlanService>();
-
 // Register Switch service as singleton
 builder.Services.AddSingleton<SwitchService>();
 

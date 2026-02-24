@@ -7,14 +7,7 @@ namespace NbgDev.SwitchMan.App.Components.Pages;
 public partial class Settings
 {
     [Inject]
-    private VlanService VlanService { get; set; } = null!;
-
-    [Inject]
     private IConfigurationService ConfigurationService { get; set; } = null!;
-
-    private string vlanName = string.Empty;
-    private string errorMessage = string.Empty;
-    private string successMessage = string.Empty;
 
     // Omada configuration form fields
     private string omadaControllerUrl = string.Empty;
@@ -116,36 +109,5 @@ public partial class Settings
             omadaErrorMessage = ex.Message;
         }
     }
-
-    private void AddVlan()
-    {
-        errorMessage = string.Empty;
-        successMessage = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(vlanName))
-        {
-            errorMessage = "Please enter a VLAN name.";
-            return;
-        }
-
-        try
-        {
-            var vlan = new Vlan(vlanName);
-            VlanService.AddVlan(vlan);
-
-            successMessage = $"VLAN '{vlanName}' added successfully.";
-            vlanName = string.Empty;
-        }
-        catch (InvalidOperationException ex)
-        {
-            errorMessage = ex.Message;
-        }
-    }
-
-    private void DeleteVlan(Vlan vlan)
-    {
-        VlanService.RemoveVlan(vlan);
-        successMessage = $"VLAN '{vlan.Name}' deleted successfully.";
-        errorMessage = string.Empty;
-    }
 }
+
