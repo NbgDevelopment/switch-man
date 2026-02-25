@@ -65,6 +65,7 @@ public partial class SwitchCard
                 Switch.Name, port.PortNumber, selectedVlanId, vlan?.Name ?? string.Empty);
 
             await SwitchAccessService.SetPortVlanAsync(Switch.IpAddress, port, selectedVlanId);
+            await LoadPortsAsync();
         }
         catch (Exception ex)
         {
