@@ -27,6 +27,7 @@ public partial class SwitchCard
 
     private IEnumerable<PortInfo>? _ports;
     private IEnumerable<VlanInfo>? _vlans;
+    private Dictionary<int, string> _selectedVlans = new();
     private bool _isLoading = true;
     private string? _loadError;
 
@@ -43,6 +44,7 @@ public partial class SwitchCard
         {
             _ports = await SwitchAccessService.GetPortVlansAsync(Switch.IpAddress);
             _vlans = await SwitchAccessService.GetVlansAsync(Switch.IpAddress);
+            _selectedVlans = (_ports ?? []).ToDictionary(p => p.PortNumber, _ => string.Empty);
         }
         catch (Exception ex)
         {
@@ -55,8 +57,11 @@ public partial class SwitchCard
         }
     }
 
-    private async Task OnVlanSelectionChangedAsync(PortInfo port, string selectedVlanId)
+    private async Task OnVlanSelectionChangedAsync(PortInfo port)
     {
+        var selectedVlanId = _selectedVlans.GetValueOrDefault(port.PortNumber, string.Empty);
+        if (string.IsNullOrEmpty(selectedVlanId))
+            return;
         try
         {
             var vlan = _vlans?.FirstOrDefault(v => v.Id == selectedVlanId);
@@ -65,6 +70,7 @@ public partial class SwitchCard
                 Switch.Name, port.PortNumber, selectedVlanId, vlan?.Name ?? string.Empty);
 
             await SwitchAccessService.SetPortVlanAsync(Switch.IpAddress, port, selectedVlanId);
+            await LoadPortsAsync();
         }
         catch (Exception ex)
         {
