@@ -9,6 +9,9 @@ public partial class Settings
     [Inject]
     private IConfigurationService ConfigurationService { get; set; } = null!;
 
+    [Inject]
+    private ILogger<Settings> Logger { get; set; } = null!;
+
     // Omada configuration form fields
     private string omadaControllerUrl = string.Empty;
     private string omadaId = string.Empty;
@@ -57,6 +60,7 @@ public partial class Settings
 
     private void SaveOmadaSettings()
     {
+        Logger.LogInformation("SaveOmadaSettings called.");
         omadaErrorMessage = string.Empty;
         omadaSuccessMessage = string.Empty;
 
@@ -90,6 +94,9 @@ public partial class Settings
             return;
         }
 
+        Logger.LogInformation("Validation passed. Saving Omada settings: ControllerUrl={ControllerUrl}, OmadaId={OmadaId}, ClientId={ClientId}",
+            omadaControllerUrl.Trim(), omadaId.Trim(), omadaClientId.Trim());
+
         try
         {
             var settings = new OmadaSettings
@@ -103,9 +110,11 @@ public partial class Settings
             ConfigurationService.SaveOmadaSettings(settings);
             omadaIsConfigured = settings.IsConfigured;
             omadaSuccessMessage = "Omada Controller configuration saved successfully.";
+            Logger.LogInformation("Omada settings saved successfully.");
         }
         catch (InvalidOperationException ex)
         {
+            Logger.LogError(ex, "Failed to save Omada settings.");
             omadaErrorMessage = ex.Message;
         }
     }

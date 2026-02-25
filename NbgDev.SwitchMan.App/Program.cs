@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 using NbgDev.SwitchMan.App.Components;
 using NbgDev.SwitchMan.App.Services;
@@ -16,7 +17,11 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add Data Protection for encrypting sensitive configuration values
-builder.Services.AddDataProtection();
+// Persist keys to a dedicated volume separate from the encrypted config data
+var keysPath = builder.Configuration.GetValue<string>("SwitchMan:KeysPath") ?? "keys";
+Directory.CreateDirectory(keysPath);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 
 // Register Configuration service as singleton
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();

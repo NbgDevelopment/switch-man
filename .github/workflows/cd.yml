@@ -75,10 +75,13 @@ jobs:
               restart: unless-stopped
               environment:
                 - SwitchMan__ConfigPath=/data/config
+                - SwitchMan__KeysPath=/data/keys
               volumes:
                 - switchman_config:/data/config
+                - switchman_keys:/data/keys
           volumes:
             switchman_config:
+            switchman_keys:
           EOF
 
       - name: Create GitHub release
