@@ -15,7 +15,7 @@ COPY NbgDev.SwitchMan.App/. ./NbgDev.SwitchMan.App/
 
 # Build and publish the application
 WORKDIR /source/NbgDev.SwitchMan.App
-RUN dotnet publish -c Release -o /app --no-restore
+RUN dotnet publish -c Release -o /app
 
 # Use the official .NET 10 runtime image for running
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
