@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 using NbgDev.SwitchMan.App.Components;
 using NbgDev.SwitchMan.App.Services;
@@ -16,7 +17,13 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add Data Protection for encrypting sensitive configuration values
-builder.Services.AddDataProtection();
+// Persist keys to the config directory so they survive container restarts
+// and are consistent between requests (required for Blazor Server circuit protection)
+var configPath = builder.Configuration.GetValue<string>("SwitchMan:ConfigPath") ?? "config";
+var keysPath = Path.Combine(configPath, "keys");
+Directory.CreateDirectory(keysPath);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 
 // Register Configuration service as singleton
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
