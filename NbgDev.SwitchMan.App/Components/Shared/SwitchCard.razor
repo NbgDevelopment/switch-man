@@ -36,7 +36,8 @@
                                 <td>@port.VlanId (@port.VlanName)</td>
                                 <td>
                                     <select class="form-select form-select-sm"
-                                            @onchange="e => OnVlanSelectionChangedAsync(port, e.Value?.ToString() ?? string.Empty)">
+                                            @bind="_selectedVlans[port.PortNumber]"
+                                            @bind:after="() => OnVlanSelectionChangedAsync(port)">
                                         <option value="">-- Select --</option>
                                         @if (_vlans is not null)
                                         {
