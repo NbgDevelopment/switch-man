@@ -17,10 +17,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add Data Protection for encrypting sensitive configuration values
-// Persist keys to the config directory so they survive container restarts
-// and are consistent between requests (required for Blazor Server circuit protection)
-var configPath = builder.Configuration.GetValue<string>("SwitchMan:ConfigPath") ?? "config";
-var keysPath = Path.Combine(configPath, "keys");
+// Persist keys to a dedicated volume separate from the encrypted config data
+var keysPath = builder.Configuration.GetValue<string>("SwitchMan:KeysPath") ?? "keys";
 Directory.CreateDirectory(keysPath);
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
